@@ -1,4 +1,18 @@
 {
+  // -----------------------------
+  //  Path alias configuration
+  // -----------------------------
+  "compilerOptions": {
+    /* Resolve “@/...” to the project’s src folder */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+
+  /* -------------------------------------------------
+     Existing sections kept exactly as you had them
+     ------------------------------------------------- */
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

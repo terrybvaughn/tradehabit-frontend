@@ -1,0 +1,9 @@
+/* src/components/Divider/Divider.module.css */
+.rule {
+  height: 1px;
+  background: var(--gray-divider);
+
+  /* full-bleed trick */
+  width: 100vw;                 /* stretch across the viewport   */
+  margin-left: calc(50% - 50vw);/* pull left to cancel centering */
+}
