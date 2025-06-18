@@ -1,0 +1,7 @@
+.shell {
+    width: 1200px;
+    min-height: 100vh;
+    margin-inline: auto;      /* centers horizontally */
+    display: flex;
+    flex-direction: column;
+  }

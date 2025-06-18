@@ -1,25 +1,35 @@
 {
   "compilerOptions": {
+    /* incremental data */
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    /* language / module targets */
     "target": "ES2022",
     "lib": ["ES2023"],
+    "types": ["vite/client", "node"],
     "module": "ESNext",
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* bundler-friendly flags */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* --- alias block (adds @/) ---------------------------------- */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    /* strictness / lint-style flags */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
+
   "include": ["vite.config.ts"]
 }
