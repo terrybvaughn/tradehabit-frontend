@@ -53,7 +53,7 @@ export const DonutChart: FC<DonutChartProps> = ({ value, label }) => {
           marginTop: -60,
           marginBottom: 46,
           fontFamily: "Roboto, sans-serif",
-          color: "#b4b4b4",
+          color: "#9EADB8",
           fontSize: 10,
           fontWeight: 400,
         }}
