@@ -9,21 +9,21 @@
   width: 200px;
   min-height: calc(100vh - 53px);
   margin: 48px 20px 0 0;
-  /* background: #cce6ff; */
 }
 
 .centerColumn {
   width: 680px;
   min-height: calc(100vh - 53px);
   margin: 48px 20px 0 20px;
-  /* background: #d2ffd2; */
 }
 
 .rightColumn {
   width: 320px;
-  min-height: calc(100vh - 53px);
+  height: calc(100vh - 53px - 70px);
+  min-height: unset;
   margin: 48px 0 0 20px;
-  background: #ffd2e6;
+  display: flex;
+  flex-direction: column;
 }
 
 .section {
@@ -53,20 +53,22 @@
 .metrics {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0.8em 0 0 0;
 }
 
 .metrics li {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-  color: var(--gray-divider);
-  margin-bottom: 4px;
+  font-size: 13px;
+  color: #9EADB8;
+  margin-bottom: 6px;
+  font-family: 'Roboto', sans-serif;
 }
 
 .metrics li span {
   color: #fff;
   font-weight: 500;
+  font-family: 'Roboto', sans-serif;
 } 
 
 .spacer {
@@ -77,14 +79,14 @@
   font-size: 22px;
   font-weight: 600;
   color: #fff;
-  margin-top: -8px;
+  margin-top: 0;
   margin-bottom: 12px;
 }
 
 .insightDiagnostic {
   font-size: 15px;
   line-height: 1.7;
-  color: var(--gray-divider);
+  color: #9EADB8;
 }
 
 .insightTitle {
@@ -93,4 +95,203 @@
   color: #fff;
   margin-top: 1.5em;
   margin-bottom: -0.5em;
+}
+
+.goalsRow {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 32px;
+}
+
+.goalCard {
+  width: 200px;
+  height: 130px;
+  background: rgba(41, 51, 56, 0.38);
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px 16px 12px 16px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.goalCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.goalIcon {
+  width: 28px;
+  height: 28px;
+}
+
+.goalTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #9EADB8;
+}
+
+.goalProgressBarBg {
+  width: 100%;
+  height: 8px;
+  background: #fff;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.goalProgressBarFill {
+  height: 100%;
+  background: #0077b6;
+  border-radius: 4px 4px 4px 4px;
+  transition: width 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.goalDescription {
+  font-size: 11px;
+  color: #9EADB8;
+  margin-top: 2px;
+  line-height: 1.5;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 1.8em 0 1em 0;
+  letter-spacing: 0.01em;
+}
+
+.tradesContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  background: none;
+  overflow: hidden;
+  margin: 0 0 0 0;
+}
+
+.tradesHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  margin-top: 0px;
+  margin-bottom: 1.2em;
+}
+
+.tradesHeading {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tradesDateRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9EADB8;
+  font-size: 14px;
+  margin: 0;
+}
+
+.tradesCalendarIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.tradesTableOuter {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 0 0;
+}
+
+.tradesTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tradesRowEven {
+  background: rgba(41, 51, 56, 0.38);
+}
+
+.tradesRowOdd {
+  background: #121417;
+}
+
+.tradesChevronCol {
+  width: 20px;
+  padding: 0 0 0 14px;
+  vertical-align: middle;
+}
+
+.tradesChevronIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.tradesStatusCol {
+  width: 28px;
+  padding: 0 10px 0 0;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.tradesStatusIcon {
+  width: 28px;
+  height: 28px;
+  display: block;
+  margin-left: auto;
+}
+
+.tradesContentCol {
+  padding: 8px 0 8px 0;
+  color: #9EADB8;
+  font-size: 11px;
+  font-family: 'Roboto', sans-serif;
+  vertical-align: middle;
+}
+
+.tradesContentMain {
+  color: #9EADB8;
+  font-size: 11px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+}
+
+.tradesDateTime {
+  color: #9EADB8;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.lossChartContainer {
+  width: 100%;
+  background: rgba(41, 51, 56, 0.38);
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  margin-top: 24px;
+  overflow-x: auto;
+  box-sizing: border-box;
+  padding: 2px 20px 10px 10px;
+}
+
+.lossChartSvg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
