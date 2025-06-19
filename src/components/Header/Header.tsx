@@ -8,7 +8,11 @@ import settingsIconHover from "@/assets/images/icon-hover-settings.svg"; // alia
 import uploadIcon from "@/assets/images/icon-upload.svg"; // aliased path
 import uploadIconHover from "@/assets/images/icon-hover-upload.svg"; // aliased path
 
-export const Header: FC = () => {
+interface HeaderProps {
+  setInsightsExpanded: (expanded: boolean) => void;
+}
+
+export const Header: FC<HeaderProps> = ({ setInsightsExpanded }) => {
   const [isUploadHovered, setIsUploadHovered] = useState(false);
   const [isSettingsHovered, setIsSettingsHovered] = useState(false);
 
@@ -22,7 +26,7 @@ export const Header: FC = () => {
 
       {/* ------------ right side ------------- */}
       <nav className={styles.nav} aria-label="Primary">
-        <a className={styles.link} href="#">Dashboard</a>
+        <a className={styles.link} href="#" onClick={() => setInsightsExpanded(false)}>Dashboard</a>
         <a className={styles.link} href="#">Insights</a>
         <a className={styles.link} href="#">Goals</a>
 
