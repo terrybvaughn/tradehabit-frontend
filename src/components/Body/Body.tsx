@@ -7,6 +7,7 @@ import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
 import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import { TradesTable } from "./TradesTable";
 import { LossConsistencyChart } from "./LossConsistencyChart";
+import { useSummary } from "@/api/hooks";
 
 interface BodyProps {
   children: ReactNode;
@@ -455,6 +456,30 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   const summary = insightsData.find(i => i.priority === 0);
   const rest = insightsData.filter(i => i.priority !== 0).sort((a, b) => a.priority - b.priority);
 
+  // Live summary data from backend
+  const { data: summaryData } = useSummary();
+  const cleanTradeRate = Math.round((summaryData?.success_rate ?? 0) * 100);
+
+  // Derived metrics for Performance, Mistakes, Streaks columns
+  const totalTrades = summaryData?.total_trades ?? 0;
+  const winningTrades = summaryData?.win_count ?? 0;
+  const losingTrades = summaryData?.loss_count ?? 0;
+  const winRate = Math.round((summaryData?.win_rate ?? 0) * 100);
+  const avgProfit = summaryData?.average_win?.toFixed(2) ?? "0";
+  const avgLoss = summaryData?.average_loss?.toFixed(2) ?? "0";
+  const payoffRatio = summaryData?.payoff_ratio?.toFixed(2) ?? "0";
+  const cleanTrades = Math.round(totalTrades * (summaryData?.success_rate ?? 0));
+  const flaggedTrades = totalTrades - cleanTrades;
+
+  const mistakeCounts = summaryData?.mistake_counts ?? {};
+  const excessiveRisk = mistakeCounts["excessive risk"] ?? 0;
+  const outsizedLoss = mistakeCounts["outsized loss"] ?? 0;
+  const revengeTrade = mistakeCounts["revenge trade"] ?? 0;
+  const noStopLoss = mistakeCounts["no stop-loss"] ?? 0;
+
+  const streakCurrent = summaryData?.streak_current ?? 0;
+  const streakRecord = summaryData?.streak_record ?? 0;
+
   // Handler for expanding insights
   const handleExpandInsights = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -488,38 +513,38 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   return (
     <div className={styles.body}>
       <div className={styles.leftColumn}>
-        <DonutChart value={73} label="Clean Trade Rate" />
+        <DonutChart value={cleanTradeRate} label="Clean Trade Rate" />
         <div className={styles.section}>
           <h3 className={styles.sectionHeading}>Performance</h3>
           <ul className={styles.metrics}>
-            <li>Total Trades <span>100</span></li>
-            <li>Clean Trades <span>92</span></li>
-            <li>Flagged Trades <span>8</span></li>
-            <li>Clean Trade Rate <span>92%</span></li>
+            <li>Total Trades <span>{totalTrades}</span></li>
+            <li>Clean Trades <span>{cleanTrades}</span></li>
+            <li>Flagged Trades <span>{flaggedTrades}</span></li>
+            <li>Clean Trade Rate <span>{cleanTradeRate}%</span></li>
             <li className={styles.spacer}></li>
-            <li>Winning Trades <span>51</span></li>
-            <li>Losing Trades <span>49</span></li>
-            <li>Win Rate <span>51%</span></li>
+            <li>Winning Trades <span>{winningTrades}</span></li>
+            <li>Losing Trades <span>{losingTrades}</span></li>
+            <li>Win Rate <span>{winRate}%</span></li>
             <li className={styles.spacer}></li>
-            <li>Average Profit <span>21.08</span></li>
-            <li>Average Loss <span>19.24</span></li>
-            <li>Payoff Ratio <span>1.10</span></li>
+            <li>Average Profit <span>{avgProfit}</span></li>
+            <li>Average Loss <span>{avgLoss}</span></li>
+            <li>Payoff Ratio <span>{payoffRatio}</span></li>
           </ul>
         </div>
         <div className={styles.section}>
           <h3 className={styles.sectionHeading}>Mistakes</h3>
           <ul className={styles.metrics}>
-            <li>Excessive Risk <span>4</span></li>
-            <li>Outsized Loss <span>2</span></li>
-            <li>Revenge Trade <span>1</span></li>
-            <li>No Stop-Loss <span>1</span></li>
+            <li>Excessive Risk <span>{excessiveRisk}</span></li>
+            <li>Outsized Loss <span>{outsizedLoss}</span></li>
+            <li>Revenge Trade <span>{revengeTrade}</span></li>
+            <li>No Stop-Loss <span>{noStopLoss}</span></li>
           </ul>
         </div>
         <div className={styles.section}>
           <h3 className={styles.sectionHeading}>Streaks</h3>
           <ul className={styles.metrics}>
-            <li>Current Clean Streak <span>22</span></li>
-            <li>Record Clean Streak <span>15</span></li>
+            <li>Current Clean Streak <span>{streakCurrent}</span></li>
+            <li>Record Clean Streak <span>{streakRecord}</span></li>
           </ul>
         </div>
       </div>
