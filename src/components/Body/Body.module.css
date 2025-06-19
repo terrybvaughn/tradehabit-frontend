@@ -16,7 +16,7 @@
   width: 680px;
   min-height: calc(100vh - 53px);
   margin: 48px 20px 0 20px;
-  background: #d2ffd2;
+  /* background: #d2ffd2; */
 }
 
 .rightColumn {
@@ -71,4 +71,26 @@
 
 .spacer {
   margin-top: 12px;
+}
+
+.insightsHeading {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: -8px;
+  margin-bottom: 12px;
+}
+
+.insightDiagnostic {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--gray-divider);
+}
+
+.insightTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 1.5em;
+  margin-bottom: -0.5em;
 }
