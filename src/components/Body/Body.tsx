@@ -2,7 +2,7 @@ import type { FC, ReactNode } from "react";
 import styles from "./Body.module.css";
 import { DonutChart } from "./DonutChart";
 import { GoalCard } from "./GoalCard";
-import iconCleanCheck from "@/assets/images/icon-clean-check.svg";
+import iconCleanCheckCircle from "@/assets/images/icon-clean-check-circle.svg";
 import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
 import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import { TradesTable } from "./TradesTable";
@@ -59,7 +59,7 @@ const goalsData = [
     goal: 50,
     progress: 0.39,
     title: "Clean Trades",
-    icon: iconCleanCheck,
+    icon: iconCleanCheckCircle,
     description: "Complete {goal} trades without making a mistake."
   },
   {
