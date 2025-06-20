@@ -279,6 +279,35 @@
   margin-top: 4px;
 }
 
+/* Expanded trade details */
+.tradesDetailsContainer {
+  color: #9EADB8;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.tradesDetailLine {
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.tradesDetailLabel {
+  flex: 0 0 auto;
+  text-align: left;
+  margin-right: 12px;
+}
+
+.tradesDetailValue {
+  flex: 1 1 auto;
+  text-align: right;
+  word-break: break-all;
+  padding-right: 2px;
+}
+
 .lossChartContainer {
   width: 100%;
   background: rgba(41, 51, 56, 0.38);
@@ -294,4 +323,8 @@
   display: block;
   width: 100%;
   height: auto;
+}
+
+.tradesDetailsCol {
+  padding: 8px 10px 8px 0;
 }
