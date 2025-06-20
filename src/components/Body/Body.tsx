@@ -91,7 +91,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   const { data: summaryData } = useSummary();
   const { data: tradesDataResp } = useTrades();
   const tradesData = tradesDataResp?.trades ?? [];
-  const cleanTradeRate = Math.round((summaryData?.success_rate ?? 0) * 100);
+  const cleanTradeRate = Math.round((summaryData?.clean_trade_rate ?? 0) * 100);
 
   // Derived metrics for Performance, Mistakes, Streaks columns
   const totalTrades = summaryData?.total_trades ?? 0;
@@ -101,8 +101,8 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   const avgProfit = summaryData?.average_win?.toFixed(2) ?? "0";
   const avgLoss = summaryData?.average_loss?.toFixed(2) ?? "0";
   const payoffRatio = summaryData?.payoff_ratio?.toFixed(2) ?? "0";
-  const cleanTrades = Math.round(totalTrades * (summaryData?.success_rate ?? 0));
-  const flaggedTrades = totalTrades - cleanTrades;
+  const flaggedTrades = summaryData?.flagged_trades ?? (totalTrades - Math.round(totalTrades * (summaryData?.clean_trade_rate ?? 0)));
+  const cleanTrades = totalTrades - flaggedTrades;
 
   const mistakeCounts = summaryData?.mistake_counts ?? {};
   const excessiveRisk = mistakeCounts["excessive risk"] ?? 0;
