@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "./client";
-import type { AnalyzeResponse, SummaryResponse, TradesResponse, LossesResponse } from "./types";
+import type { AnalyzeResponse, SummaryResponse, TradesResponse, LossesResponse, Insights, Goals } from "./types";
 import { TradeHabitApiError } from "./client";
 
 /**
@@ -29,6 +29,8 @@ export const useAnalyzeCsv = (
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["trades"] });
       qc.invalidateQueries({ queryKey: ["losses"] });
+      qc.invalidateQueries({ queryKey: ["insights"] });
+      qc.invalidateQueries({ queryKey: ["goals"] });
       // propagate to caller if provided
       options?.onSuccess?.(data, variables, context as any);
     },
@@ -38,26 +40,49 @@ export const useAnalyzeCsv = (
 /**
  * Hook to fetch account/trading summary.
  */
-export const useSummary = () =>
+export const useSummary = (enabled: boolean = true) =>
   useQuery<SummaryResponse, TradeHabitApiError>({
     queryKey: ["summary"],
     queryFn: () => apiClient.get<SummaryResponse>("/api/summary"),
+    enabled,
   });
 
 /**
  * Hook to fetch all trades (and date range)
  */
-export const useTrades = () =>
+export const useTrades = (enabled: boolean = true) =>
   useQuery<TradesResponse, TradeHabitApiError>({
     queryKey: ["trades"],
     queryFn: () => apiClient.get<TradesResponse>("/api/trades"),
+    enabled,
   });
 
 /**
  * Hook to fetch loss consistency data
  */
-export const useLosses = () =>
+export const useLosses = (enabled: boolean = true) =>
   useQuery<LossesResponse, TradeHabitApiError>({
     queryKey: ["losses"],
     queryFn: () => apiClient.get<LossesResponse>("/api/losses"),
-  }); 
+    enabled,
+  });
+
+/**
+ * Hook to fetch trading insights (ordered by priority from backend)
+ */
+export const useInsights = (enabled: boolean = true) =>
+  useQuery<Insights[], TradeHabitApiError>({
+    queryKey: ["insights"],
+    queryFn: () => apiClient.get<Insights[]>("/api/insights"),
+    enabled,
+  });
+
+/**
+ * Hook to fetch goals progress
+ */
+export const useGoals = (enabled: boolean = true) =>
+  useQuery<Goals[], TradeHabitApiError>({
+    queryKey: ["goals"],
+    queryFn: () => apiClient.get<Goals[]>("/api/goals"),
+    enabled,
+  });
