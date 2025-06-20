@@ -52,7 +52,8 @@ export interface SummaryResponse {
   required_wr_adj: number;
   streak_current: number;
   streak_record: number;
-  success_rate: number; // 0-1
+  clean_trade_rate: number; // 0-1
+  flagged_trades: number;
   total_mistakes: number;
   total_trades: number;
   win_count: number;
