@@ -162,8 +162,8 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
                               <span className={styles.tradesDetailValue}>{formatDateTime(trade.exitTime)}</span>
                             </div>
                             <div className={styles.tradesDetailLine}>
-                              <span className={styles.tradesDetailLabel}>Profit</span>
-                              <span className={styles.tradesDetailValue}>{trade.pnl}</span>
+                              <span className={styles.tradesDetailLabel}>Profit per Unit</span>
+                              <span className={styles.tradesDetailValue}>{trade.pnl < 0 ? -Math.abs(trade.pointsLost) : trade.pointsLost}</span>
                             </div>
                             <div className={styles.tradesDetailLine}>
                               <span className={styles.tradesDetailLabel}>Risk per Unit</span>
