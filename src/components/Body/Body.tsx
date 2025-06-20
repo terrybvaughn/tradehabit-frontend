@@ -109,7 +109,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
       "Win Rate vs. Payoff Ratio",
     ];
 
-    // Find first linkable phrase present in diagnostic text
+    // Find first linkable phrase present in diagnostic text 
     const matchedText = linkableTexts.find((txt) => summary.diagnostic.includes(txt));
 
     if (matchedText) {
@@ -119,7 +119,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
           {summary.diagnostic.slice(0, idx)}
           <a
             href="#"
-            style={{ color: "#D2FF31", cursor: "pointer", fontWeight: "500", textDecoration: "none" }}
+            className={styles.summaryLink}
             onClick={handleExpandInsights}
           >
             {matchedText}
