@@ -42,7 +42,16 @@ export const Header: FC<HeaderProps> = ({ setInsightsExpanded }) => {
       {/* ------------ right side ------------- */}
       <nav className={styles.nav} aria-label="Primary">
         <a className={styles.link} href="#" onClick={() => setInsightsExpanded(false)}>Dashboard</a>
-        <a className={styles.link} href="#">Insights</a>
+        <a
+          className={styles.link}
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setInsightsExpanded(true);
+          }}
+        >
+          Insights
+        </a>
         <a className={styles.link} href="#">Goals</a>
 
         <div className={styles.buttonGroup}>

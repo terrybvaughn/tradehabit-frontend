@@ -1,4 +1,4 @@
-import { type FC, useRef, useLayoutEffect, useState } from "react";
+import { type FC, useRef, useLayoutEffect, useState, useEffect } from "react";
 import styles from "./Body.module.css";
 
 interface Loss {
@@ -6,6 +6,11 @@ interface Loss {
   lossIndex: number;
   pointsLost: number;
   tradeId: string;
+  side?: string;
+  exitQty?: number;
+  symbol?: string;
+  entryTime?: string;
+  exitOrderId?: number;
 }
 
 interface LossConsistencyChartProps {
@@ -68,12 +73,14 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
   const bottomPad = 38; // increase for x-axis label
   const chartW = width - leftPad - rightPad;
   const chartH = height - topPad - bottomPad;
+  const plotW = chartW + rightPad;
 
   // Add margin so first/last dots are inside the chart area
   const dotPad = 16;
+  const dotShift = -4; // px left shift to balance right margin
 
   // Map data to SVG coords
-  const x = (i: number) => dotPad + ((chartW - 2 * dotPad) * i) / (n - 1 || 1);
+  const x = (i: number) => dotPad + ((plotW - 2 * dotPad) * i) / (n - 1 || 1) + dotShift;
   const y = (v: number) => topPad + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
 
   // Y-axis ticks
@@ -95,6 +102,53 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
   const [svgOffset, setSvgOffset] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Hover & tooltip state
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [tooltipIdx, setTooltipIdx] = useState<number | null>(null);
+  const [pinnedIdx, setPinnedIdx] = useState<number | null>(null);
+  const hoverTimer = useRef<number | null>(null);
+
+  // Clear hover timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimer.current !== null) {
+        clearTimeout(hoverTimer.current);
+      }
+    };
+  }, []);
+
+  // Dismiss pinned tooltip on document click or scroll
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      const targetNode = e.target as Node;
+      if (
+        (svgRef.current && svgRef.current.contains(targetNode)) ||
+        (tooltipRef.current && tooltipRef.current.contains(targetNode))
+      ) {
+        return; // clicked inside chart or tooltip; ignore
+      }
+      setPinnedIdx(null);
+      setTooltipIdx(null);
+    };
+    const handleScroll = () => {
+      setPinnedIdx(null);
+      setTooltipIdx(null);
+    };
+    document.addEventListener("click", handleDocClick);
+    scrollAreaRef.current?.addEventListener("scroll", handleScroll);
+    return () => {
+      document.removeEventListener("click", handleDocClick);
+      scrollAreaRef.current?.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const showTooltipIdx = pinnedIdx ?? tooltipIdx;
+
+  function formatDateTime(dt?: string) {
+    return dt ? dt.replace("T", " ").slice(0, 19) : "";
+  }
 
   useLayoutEffect(() => {
     if (svgRef.current && scrollAreaRef.current) {
@@ -155,7 +209,7 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
           style={{
             flex: "1 1 auto",
             overflowX: "auto",
-            overflowY: "hidden",
+            overflowY: "visible",
             position: "relative",
             paddingRight: "30px",
           }}
@@ -170,19 +224,19 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
               preserveAspectRatio="none"
             >
               {/* Chart area background (no rounded corners) */}
-              <rect x={0} y={topPad} width={chartW} height={chartH} fill={bg} />
+              <rect x={0} y={topPad} width={plotW} height={chartH} fill={bg} />
               {/* Standard deviation band: ±1 std dev */}
               <rect
                 x={0}
                 y={y(mean + std)}
-                width={chartW}
+                width={plotW}
                 height={y(mean - std) - y(mean + std)}
                 fill={band}
               />
               {/* Mean dashed line */}
               <line
                 x1={0}
-                x2={chartW}
+                x2={plotW}
                 y1={y(mean)}
                 y2={y(mean)}
                 stroke={blue}
@@ -192,23 +246,108 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
               {/* X-axis line */}
               <line
                 x1={0}
-                x2={chartW}
+                x2={plotW}
                 y1={topPad + chartH}
                 y2={topPad + chartH}
                 stroke={border}
                 strokeWidth={1.5}
               />
               {/* Dots */}
-              {sorted.map((t, i) => (
-                <circle
-                  key={i}
-                  cx={x(i)}
-                  cy={y(t.pointsLost)}
-                  r={4}
-                  fill={t.hasMistake ? mistakePink : cleanWhite}
-                />
-              ))}
+              {sorted.map((t, i) => {
+                const active = i === hoverIdx || i === pinnedIdx;
+                return (
+                  <circle
+                    key={i}
+                    cx={x(i)}
+                    cy={y(t.pointsLost)}
+                    r={active ? 6 : 4}
+                    fill={t.hasMistake ? mistakePink : cleanWhite}
+                    style={{ transition: "r 0.15s ease, transform 0.15s ease" }}
+                    onMouseEnter={() => {
+                      setHoverIdx(i);
+                      if (hoverTimer.current !== null) clearTimeout(hoverTimer.current);
+                      hoverTimer.current = window.setTimeout(() => {
+                        setTooltipIdx(i);
+                      }, 800);
+                    }}
+                    onMouseLeave={() => {
+                      setHoverIdx((prev) => (prev === i ? null : prev));
+                      if (hoverTimer.current !== null) clearTimeout(hoverTimer.current);
+                      if (pinnedIdx !== i) setTooltipIdx(null);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPinnedIdx(i);
+                      setTooltipIdx(i);
+                    }}
+                  />
+                );
+              })}
             </svg>
+            {showTooltipIdx != null && (() => {
+              const loss = sorted[showTooltipIdx];
+              const left = x(showTooltipIdx);
+              const top = y(loss.pointsLost);
+              const placeBelow = (top - topPad) < chartH * 0.55;
+              const translateY = placeBelow ? "10px" : "-10px";
+
+              // Horizontal edge handling
+              const edgePad = 90; // px threshold from sides
+              let translateX = "-50%";
+              if (left < edgePad) {
+                translateX = "0"; // align left edge of tooltip with dot
+              } else if (left > plotW - edgePad) {
+                translateX = "-100%"; // align right edge
+              }
+
+              const translate = placeBelow
+                ? `translate(${translateX}, ${translateY})`
+                : `translate(${translateX}, -100%) translateY(${translateY})`;
+              return (
+                <div
+                  ref={tooltipRef}
+                  style={{
+                    position: "absolute",
+                    left,
+                    top,
+                    transform: translate,
+                    background: "#FFFFFF",
+                    color: "#121417",
+                    borderRadius: 6,
+                    padding: "8px 10px",
+                    fontSize: 12,
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                  }}
+                >
+                  <div className={styles.lossTooltipLine}>
+                    {loss.side ?? ""} • {loss.exitQty ?? ""} • {loss.symbol ?? ""}
+                  </div>
+                  <div className={styles.lossTooltipLine} style={{ marginBottom: "6px",}}>
+                    {formatDateTime(loss.entryTime)}
+                  </div>
+                  <div className={styles.lossTooltipLine} style={{ marginBottom: "6px", fontWeight: 500 }}>
+                    Points Lost: {loss.pointsLost}
+                  </div>
+                  <div className={styles.lossTooltipLine}>
+                    Exit Order ID: {" "}
+                    <a
+                      href="#"
+                      style={{ color: "#0077b6", textDecoration: "underline" }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.dispatchEvent(
+                          new CustomEvent("scrollToTrade", { detail: { tradeId: loss.tradeId } })
+                        );
+                      }}
+                    >
+                      {loss.exitOrderId}
+                    </a>
+                  </div>
+                </div>
+              );
+            })()}
             {/* X-axis tick labels as HTML, aligned with chart area */}
             <div
               style={{

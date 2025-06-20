@@ -1,4 +1,4 @@
-import { type FC, useState } from "react";
+import { type FC, useState, useEffect, useRef } from "react";
 import styles from "./Body.module.css";
 import iconCalendar from "@/assets/images/icon-calendar.svg";
 import iconChevronRight from "@/assets/images/Icon-chevron-right.png";
@@ -50,6 +50,30 @@ function formatDateTime(dt: string): string {
 
 export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const tableOuterRef = useRef<HTMLDivElement>(null);
+
+  // Listen for scrollToTrade event from LossConsistencyChart
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<{ tradeId: string }>;
+      const tradeId = custom.detail?.tradeId;
+      if (!tradeId) return;
+
+      setExpandedRows((prev) => {
+        const next = new Set(prev);
+        next.add(tradeId);
+        return next;
+      });
+
+      // Scroll into view after a small delay to ensure the row is rendered
+      setTimeout(() => {
+        const rowEl = tableOuterRef.current?.querySelector(`tr[data-trade-id="${tradeId}"]`);
+        rowEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+    };
+    window.addEventListener("scrollToTrade", handler);
+    return () => window.removeEventListener("scrollToTrade", handler);
+  }, []);
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => {
@@ -73,7 +97,7 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
         </div>
       </div>
       <div className={styles.tradesContainer}>
-        <div className={styles.tradesTableOuter}>
+        <div className={styles.tradesTableOuter} ref={tableOuterRef}>
           <table className={styles.tradesTable}>
             <tbody>
               {trades.map((trade, i) => {
@@ -81,7 +105,7 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
                 const rowClass = i % 2 === 0 ? styles.tradesRowEven : styles.tradesRowOdd;
                 return (
                   <React.Fragment key={trade.id}>
-                    <tr className={rowClass}>
+                    <tr className={rowClass} data-trade-id={trade.id}>
                       <td
                         className={styles.tradesChevronCol}
                         onClick={() => toggleRow(trade.id)}
@@ -127,10 +151,10 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
                         <td className={styles.tradesDetailsCol} colSpan={2} style={{ padding: "8px 10px 8px 0" }}>
                           <div className={styles.tradesDetailsContainer}>
                             <div className={styles.tradesDetailLine}>
-                              <span className={styles.tradesDetailLabel} style={{ fontSize: "14px", fontWeight: 400 }}>Mistakes</span>
+                              <span className={styles.tradesDetailLabel} style={{ fontSize: "14px", fontWeight: 400, marginBottom: ".8em" }}>Mistakes</span>
                               <span className={styles.tradesDetailValue} style={{ textAlign: "right" }}>
                                 {trade.mistakes.length === 0 ? (
-                                  "None"
+                                  <span style={{ fontSize: "14px", fontWeight: 400 }}>None</span>
                                 ) : (
                                   trade.mistakes.map((m, idx) => (
                                     <span
