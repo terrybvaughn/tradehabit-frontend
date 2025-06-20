@@ -79,4 +79,22 @@ export interface LossesResponse {
   meanPointsLost: number;
   stdDevPointsLost: number;
   losses: LossEntry[];
+}
+
+// ────────────────────────────────────────────────────────────
+// Added: Insights interface used by /api/insights endpoint
+export interface Insights {
+  diagnostic: string;
+  priority: number;
+  title: string;
+}
+
+// ────────────────────────────────────────────────────────────
+// Goal tracking
+export interface Goals {
+  best_streak: number;
+  current_streak: number;
+  goal: number;
+  progress: number; // fraction 0-1
+  title: string;
 } 

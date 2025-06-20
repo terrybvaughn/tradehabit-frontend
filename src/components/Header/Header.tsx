@@ -8,6 +8,7 @@ import settingsIconHover from "@/assets/images/icon-hover-settings.svg"; // alia
 import uploadIcon from "@/assets/images/icon-upload.svg"; // aliased path
 import uploadIconHover from "@/assets/images/icon-hover-upload.svg"; // aliased path
 import { useAnalyzeCsv } from "@/api/hooks";
+import { useAnalysisStatus } from "@/AnalysisStatusContext";
 
 interface HeaderProps {
   setInsightsExpanded: (expanded: boolean) => void;
@@ -17,7 +18,10 @@ export const Header: FC<HeaderProps> = ({ setInsightsExpanded }) => {
   const [isUploadHovered, setIsUploadHovered] = useState(false);
   const [isSettingsHovered, setIsSettingsHovered] = useState(false);
 
-  const { mutate: analyzeCsv } = useAnalyzeCsv();
+  const { setReady } = useAnalysisStatus();
+  const { mutate: analyzeCsv } = useAnalyzeCsv({
+    onSuccess: () => setReady(true),
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {

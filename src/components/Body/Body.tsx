@@ -7,7 +7,8 @@ import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
 import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import { TradesTable } from "./TradesTable";
 import { LossConsistencyChart } from "./LossConsistencyChart";
-import { useSummary, useTrades, useLosses } from "@/api/hooks";
+import { useSummary, useTrades, useLosses, useInsights, useGoals } from "@/api/hooks";
+import { useAnalysisStatus } from "@/AnalysisStatusContext";
 
 interface BodyProps {
   children: ReactNode;
@@ -15,81 +16,42 @@ interface BodyProps {
   setInsightsExpanded: (expanded: boolean) => void;
 }
 
-const insightsData = [
-  {
-    diagnostic: "Over this time period, 64% of your trades were executed without a mistake. Your biggest problem is risking too much on individual trades. Bring position size back in line to avoid single-trade blow-ups. For more information, see your Excessive Risk Sizing insight.",
-    priority: 0,
-    title: "Summary"
-  },
-  {
-    diagnostic: "All 47 of your trades used stop-loss orders. This shows consistent risk discipline, which can help limit downside and reduce stress during volatile periods.",
-    priority: 1,
-    title: "Stop-Loss Discipline"
-  },
-  {
-    diagnostic: "5 of your 47 trades (10.6%) had stop distances that exceeded 1.5× your standard deviation. The average risk size among these trades was 45.25 points. These large-risk trades may signal moments of overconfidence or loss of discipline.",
-    priority: 2,
-    title: "Excessive Risk Sizing"
-  },
-  {
-    diagnostic: "You had 3 trades with losses that exceeded 1.0 standard deviation above your average losing trade. These outliers contributed 63.42 points in excess losses, meaning that if they'd been closer to your average, your total drawdown would have been significantly lower. A few large losses can erase weeks of gains. Controlling these outliers is critical for long-term performance.",
-    priority: 3,
-    title: "Outsized Losses"
-  },
-  {
-    diagnostic: "You're winning only 40% of your revenge trades—well below your overall 51% win rate—and even though your average winner is larger ($49.75 vs. $21.08), those extra losses have already set you back $-17.26 in total (about $-3.45 per revenge trade). In other words, you'd need a payoff ratio north of 1.5 just to breakeven at a 40% win rate, yet your revenge payoff is only 1.28× (compared with 0.54× overall). Bottom line: taking trades in the heat of frustration is costing you real money and eroding your edge—best to pause and stick to your plan rather than chase losses.",
-    priority: 4,
-    title: "Revenge Trading"
-  },
-  {
-    diagnostic: "You risked as little as 0.5 points and as much as 68.5 points per trade. Your average risk size was 13.61 points, with a standard deviation of 13.69 points. Wide variation in stop placement may signal inconsistency in risk management.",
-    priority: 5,
-    title: "Risk Sizing Consistency"
-  },
-  {
-    diagnostic: "Your win rate is 51.1%, and your average win is $21.08, versus an average loss of $39.24. That gives you a payoff ratio of 0.54.\nYou're running below breakeven. This math doesn't work long term. Either your losses are too large or your winners too small. One of them has to improve.",
-    priority: 6,
-    title: "Win Rate vs. Payoff Ratio"
-  }
-];
-
-const goalsData = [
-  {
-    best_streak: 16,
-    current_streak: 8,
-    goal: 50,
-    progress: 0.39,
-    title: "Clean Trades",
+// Icons and descriptions for each goal title
+const goalMeta = {
+  "Clean Trades": {
     icon: iconCleanCheckCircle,
-    description: "Complete {goal} trades without making a mistake."
+    description: "Complete {goal} trades without making a mistake.",
   },
-  {
-    best_streak: 16,
-    current_streak: 10,
-    goal: 100,
-    progress: 0.70,
-    title: "Risk Management",
+  "Risk Management": {
     icon: iconStopAlert,
-    description: "Complete {goal} trades without making a risk management error."
+    description: "Complete {goal} trades without making a risk management error.",
   },
-  {
-    best_streak: 20,
-    current_streak: 8,
-    goal: 100,
-    progress: 0.90,
-    title: "Revenge Trades",
+  "Revenge Trades": {
     icon: iconRevengeClock,
-    description: "Complete {goal} trades outside your revenge trading window."
-  }
-];
+    description: "Complete {goal} trades outside your revenge trading window.",
+  },
+} as const;
 
 export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExpanded }) => {
+  const { ready } = useAnalysisStatus();
+
+  // Fetch insights & goals from API once analysis is ready
+  const { data: insightsData = [] } = useInsights(ready);
+  const { data: goalsRaw = [] } = useGoals(ready);
+
+  // Merge meta for icons/description
+  const goalsData = goalsRaw.map((g) => ({
+    ...g,
+    icon: goalMeta[g.title as keyof typeof goalMeta]?.icon ?? "",
+    description: goalMeta[g.title as keyof typeof goalMeta]?.description ?? "",
+  }));
+
   const summary = insightsData.find(i => i.priority === 0);
   const rest = insightsData.filter(i => i.priority !== 0).sort((a, b) => a.priority - b.priority);
 
-  // Live summary data from backend
-  const { data: summaryData } = useSummary();
-  const { data: tradesDataResp } = useTrades();
+  // Live summary data from backend (enabled only when ready)
+  const { data: summaryData } = useSummary(ready);
+  const { data: tradesDataResp } = useTrades(ready);
   const tradesData = tradesDataResp?.trades ?? [];
   const cleanTradeRate = Math.round((summaryData?.clean_trade_rate ?? 0) * 100);
 
@@ -123,8 +85,8 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
       tradeId: t.id,
     }));
 
-  // Live losses data from backend
-  const { data: lossesResp } = useLosses();
+  // Live losses data from backend (enabled only when ready)
+  const { data: lossesResp } = useLosses(ready);
   const losses = lossesResp?.losses ?? [];
   const meanLoss = lossesResp?.meanPointsLost ?? 0;
   const stdLoss = lossesResp?.stdDevPointsLost ?? 0;
@@ -138,9 +100,20 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   // Render the summary as JSX with a clickable link
   let summaryJsx: React.ReactNode = null;
   if (summary) {
-    const linkText = "Excessive Risk Sizing";
-    const idx = summary.diagnostic.indexOf(linkText);
-    if (idx !== -1) {
+    const linkableTexts = [
+      "Excessive Risk Sizing",
+      "Stop-Loss Discipline",
+      "Outsized Losses",
+      "Revenge Trading",
+      "Risk Sizing Consistency",
+      "Win Rate vs. Payoff Ratio",
+    ];
+
+    // Find first linkable phrase present in diagnostic text
+    const matchedText = linkableTexts.find((txt) => summary.diagnostic.includes(txt));
+
+    if (matchedText) {
+      const idx = summary.diagnostic.indexOf(matchedText);
       summaryJsx = (
         <>
           {summary.diagnostic.slice(0, idx)}
@@ -149,9 +122,9 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
             style={{ color: "#D2FF31", cursor: "pointer", fontWeight: "500", textDecoration: "none" }}
             onClick={handleExpandInsights}
           >
-            {linkText}
+            {matchedText}
           </a>
-          {summary.diagnostic.slice(idx + linkText.length)}
+          {summary.diagnostic.slice(idx + matchedText.length)}
         </>
       );
     } else {
