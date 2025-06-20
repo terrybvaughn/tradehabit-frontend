@@ -1,6 +1,5 @@
-import type { FC } from "react";
+import { type FC, useRef, useLayoutEffect, useState } from "react";
 import styles from "./Body.module.css";
-import React, { useRef, useLayoutEffect, useState } from "react";
 
 interface Loss {
   hasMistake: boolean;
@@ -11,6 +10,8 @@ interface Loss {
 
 interface LossConsistencyChartProps {
   losses: Loss[];
+  mean?: number;
+  std?: number;
   maxLosses?: number;
 }
 
@@ -30,7 +31,7 @@ function niceCeil(val: number) {
   return Math.ceil(val / base) * base;
 }
 
-export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, maxLosses = 235 }) => {
+export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, mean: meanProp, std: stdProp, maxLosses = 235 }) => {
   // Limit to maxLosses and sort by lossIndex
   const sorted = [...losses]
     .sort((a, b) => a.lossIndex - b.lossIndex)
@@ -87,9 +88,9 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, ma
   const bg = "#121417";
   const border = "#3D4A52";
 
-  // Use provided mean and standard deviation
-  const mean = 10.93;
-  const std = 10.7;
+  // Use provided mean and standard deviation if available
+  const mean = meanProp ?? 0;
+  const std = stdProp ?? 0;
 
   const [svgOffset, setSvgOffset] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);

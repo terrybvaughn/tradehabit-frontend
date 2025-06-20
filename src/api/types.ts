@@ -57,4 +57,25 @@ export interface SummaryResponse {
   total_trades: number;
   win_count: number;
   win_rate: number; // 0-1
+}
+
+export interface TradesResponse {
+  date_range: {
+    start: string; // ISO start
+    end: string;   // ISO end
+  };
+  trades: Trade[];
+}
+
+export interface LossEntry {
+  hasMistake: boolean;
+  lossIndex: number;
+  pointsLost: number;
+  tradeId: string;
+}
+
+export interface LossesResponse {
+  meanPointsLost: number;
+  stdDevPointsLost: number;
+  losses: LossEntry[];
 } 
