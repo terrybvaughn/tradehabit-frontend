@@ -1,0 +1,162 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  /* no translucent background per spec */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: rgba(41, 51, 56, 0.38); /* same as GoalCard */
+  border: 1px solid #3D4A52;          /* same border */
+  border-radius: 14px;                /* same radius */
+  padding: 2rem;
+  max-width: 720px;
+  width: 90vw;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-family: "Manrope", system-ui, sans-serif;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: #fff;
+}
+.bodyText {
+  margin: 0 0 1.5rem;
+  color: #9EADB8;
+}
+
+.columns {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.instructions {
+  flex: 0 0 40%;
+  margin: 0;
+  padding-left: 1.2rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color:#3D4A52
+}
+
+.instructions li {
+  margin-bottom: 0.5em;
+}
+
+.uploadArea {
+  flex: 1 1 60%;
+}
+.subheading {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color:#3D4A52
+}
+.dropZone {
+  height: 160px;
+  border: 2px dashed #c5c5c5;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  color: #c5c5c5;
+}
+.dropZone:hover {
+  border-color: var(--blue-600);
+}
+
+.browseButton {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--blue-600);
+  color: #fff;
+}
+
+.browseButton:hover {
+  background-color: #0094E2;
+}
+
+.progressBlock {
+  margin-top: 1rem;
+}
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  color: #3D4A52;
+  font-family: 'Roboto', sans-serif;
+}
+.progressBarWrapper {
+  background: #f2f2f2;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.progressBar {
+  background: var(--blue-600);
+  height: 100%;
+  transition: width 0.2s ease;
+}
+.errorBlock {
+  margin-top: 1rem;
+  color: #d33;
+  font-size: 0.85rem;
+}
+.errorDetails {
+  margin: 0.5rem 0 0;
+  padding-left: 1.2rem;
+}
+.box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 767px) {
+  .columns {
+    flex-direction: column;
+  }
+  .instructions {
+    flex: 1 1 auto;
+  }
+  .uploadArea {
+    flex: 1 1 auto;
+  }
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.logoWrapper {
+  width: 90px;
+  height: 90px;
+  /* background: #fff; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: -12px;
+} 

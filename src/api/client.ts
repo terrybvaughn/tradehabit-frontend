@@ -7,11 +7,15 @@ const BASE_URL: string = (import.meta.env.VITE_API_URL as string) ?? "";
  * Unified error object thrown for any non-2xx HTTP response.
  */
 export class TradeHabitApiError extends Error {
+  /** HTTP status code returned by the backend */
   readonly status: number;
+  /** Optional structured error details from backend */
+  readonly details?: string[];
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, details?: string[]) {
     super(message);
     this.status = status;
+    this.details = details;
     this.name = "TradeHabitApiError";
   }
 }
@@ -49,8 +53,9 @@ async function handleResponse<T>(res: Response): Promise<T> {
     return data as T;
   }
 
-  const message = data?.error ?? data?.detail ?? res.statusText;
-  throw new TradeHabitApiError(message, res.status);
+  const message = data?.message ?? data?.error ?? data?.detail ?? res.statusText;
+  const details = Array.isArray(data?.details) ? (data.details as string[]) : undefined;
+  throw new TradeHabitApiError(message, res.status, details);
 }
 
 async function request<T>(
