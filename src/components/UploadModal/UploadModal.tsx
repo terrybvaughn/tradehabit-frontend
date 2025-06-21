@@ -90,6 +90,8 @@ export const UploadModal: FC<UploadModalProps> = ({ open, onClose }) => {
     e.stopPropagation();
   };
 
+  const busy = (isPending || isSuccess) && !isError;
+
   if (!open) return null;
 
   return (
@@ -134,8 +136,13 @@ export const UploadModal: FC<UploadModalProps> = ({ open, onClose }) => {
                 aria-label="Drag and drop CSV file"
               >
                 <span>Drag &amp; drop your CSV file here</span>
-                <button type="button" className={styles.browseButton} onClick={() => fileInputRef.current?.click()}>
-                  Browse...
+                <button
+                  type="button"
+                  className={`${styles.browseButton} ${busy ? styles.browseButtonBusy : ""}`}
+                  disabled={busy}
+                  onClick={() => !busy && fileInputRef.current?.click()}
+                >
+                  {busy ? "Loading..." : "Browse..."}
                 </button>
                 <input
                   ref={fileInputRef}
