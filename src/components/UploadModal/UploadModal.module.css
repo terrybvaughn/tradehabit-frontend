@@ -93,6 +93,14 @@
   background-color: #0094E2;
 }
 
+.browseButtonBusy {
+  background: #c5c5c5; /* matches dashed border */
+  cursor: default;
+}
+.browseButtonBusy:hover {
+  background: #c5c5c5;
+}
+
 .progressBlock {
   margin-top: 1rem;
 }
