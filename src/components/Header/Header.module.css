@@ -70,5 +70,9 @@
   }
   
   .buttonBlue:hover {
-    color: #D2FF31;
+    background-color: #0094E2;
+  }
+
+  .buttonGray:hover {
+    background-color: #4D5A60;
   }
