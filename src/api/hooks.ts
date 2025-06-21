@@ -25,14 +25,18 @@ export const useAnalyzeCsv = (
       return apiClient.post<AnalyzeResponse>("/api/analyze", formData);
     },
     onSuccess: (data, variables, context) => {
-      // Refetch dependent queries so UI updates with freshly analyzed data
-      qc.invalidateQueries({ queryKey: ["summary"] });
-      qc.invalidateQueries({ queryKey: ["trades"] });
-      qc.invalidateQueries({ queryKey: ["losses"] });
-      qc.invalidateQueries({ queryKey: ["insights"] });
-      qc.invalidateQueries({ queryKey: ["goals"] });
-      // propagate to caller if provided
+      // First let the caller run (may set ready flag, close modals, etc.)
       options?.onSuccess?.(data, variables, context as any);
+
+      // Then, in the next event-loop tick, invalidate cached queries so
+      // components that are now mounted will fetch the fresh data only once.
+      setTimeout(() => {
+        qc.invalidateQueries({ queryKey: ["summary"] });
+        qc.invalidateQueries({ queryKey: ["trades"] });
+        qc.invalidateQueries({ queryKey: ["losses"] });
+        qc.invalidateQueries({ queryKey: ["insights"] });
+        qc.invalidateQueries({ queryKey: ["goals"] });
+      }, 0);
     },
   });
 };
