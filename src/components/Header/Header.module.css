@@ -76,3 +76,7 @@
   .buttonGray:hover {
     background-color: #4D5A60;
   }
+
+  .active {
+    color: #ffffff;
+  }

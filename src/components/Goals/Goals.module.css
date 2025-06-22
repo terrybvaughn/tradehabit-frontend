@@ -1,0 +1,47 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.addBtn {
+  align-self: flex-start;
+  height: 30px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background: var(--blue-600);
+  color: #fff;
+}
+
+.addBtn:hover {
+  background-color: #0094E2;
+}
+
+.addIcon {
+  padding: 0 6px 0 0;
+  margin-left: -6px;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.heading {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.goalCardFull {
+    width: 680px !important;
+}

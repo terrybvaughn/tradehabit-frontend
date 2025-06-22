@@ -9,41 +9,115 @@ import { TradesTable } from "./TradesTable";
 import { LossConsistencyChart } from "./LossConsistencyChart";
 import { useSummary, useTrades, useLosses, useInsights, useGoals } from "@/api/hooks";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
+import { Goals as GoalsList } from "@/components/Goals/Goals";
 
 interface BodyProps {
   children: ReactNode;
   insightsExpanded: boolean;
   setInsightsExpanded: (expanded: boolean) => void;
+  showGoals: boolean;
 }
 
-// Icons and descriptions for each goal title
-const goalMeta = {
-  "Clean Trades": {
-    icon: iconCleanCheckCircle,
-    description: "Complete {goal} trades without making a mistake.",
-  },
-  "Risk Management": {
-    icon: iconStopAlert,
-    description: "Complete {goal} trades without making a risk management error.",
-  },
-  "Revenge Trades": {
-    icon: iconRevengeClock,
-    description: "Complete {goal} trades outside your revenge trading window.",
-  },
+// Icons for each default goal title
+const goalIconMap = {
+  "Clean Trades": iconCleanCheckCircle,
+  "Risk Management": iconStopAlert,
+  "Revenge Trades": iconRevengeClock,
 } as const;
 
-export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExpanded }) => {
+type BuildIconParams = { title?: string; mistake_types?: string[] };
+function buildGoalIcon({ title = "", mistake_types = [] }: BuildIconParams) {
+  // iconCleanCheckCircle for clean trades, iconRevengeClock for revenge, else stopAlert
+  if (mistake_types.length === 0) {
+    if (title === "Revenge Trades") return iconRevengeClock;
+    if (title === "Risk Management") return iconStopAlert;
+    return iconCleanCheckCircle;
+  }
+
+  // only revenge trade selected
+  if (mistake_types.length === 1 && mistake_types[0] === "revenge trade") {
+    return iconRevengeClock;
+  }
+
+  // all 4 mistakes chosen -> clean check icon
+  const all = [
+    "no stop-loss order",
+    "excessive risk",
+    "outsized loss",
+    "revenge trade",
+  ];
+  if (mistake_types.length === all.length && mistake_types.every((m) => all.includes(m))) {
+    return iconCleanCheckCircle;
+  }
+
+  // default
+  return iconStopAlert;
+}
+
+/**
+ * Generate a human-readable description for a goal based on its configured
+ * mistake_types and metric. Mirrors the rules defined in the Goals feature spec.
+ */
+type BuildDescParams = { goal: number; metric?: string; mistake_types?: string[]; title?: string };
+function buildGoalDescription({ goal, metric = "trades", mistake_types = [], title = "" }: BuildDescParams) {
+  const all = [
+    "no stop-loss order",
+    "excessive risk",
+    "outsized loss",
+    "revenge trade",
+  ];
+
+  // Helper to inject numbers / metric into template
+  const fmt = (tmpl: string) => tmpl.replace("{goal}", goal.toString()).replace("{metric}", metric);
+
+  // Resolve titles fallback when mistake_types is empty (legacy defaults)
+  if (mistake_types.length === 0) {
+    if (title === "Risk Management") {
+      return fmt("Complete {goal} {metric} without making a risk management error.");
+    }
+    if (title === "Revenge Trades") {
+      return fmt("Complete {goal} {metric} outside your revenge trading window.");
+    }
+    // Empty & any other title defaults to Clean Trades description
+    return fmt("Complete {goal} {metric} without making a mistake.");
+  }
+
+  // Case 1b: explicitly all mistakes selected
+  if (mistake_types.length === all.length && mistake_types.every((m) => all.includes(m))) {
+    return fmt("Complete {goal} {metric} without making a mistake.");
+  }
+
+  if (mistake_types.length === 1) {
+    switch (mistake_types[0]) {
+      case "revenge trade":
+        return fmt("Complete {goal} {metric} outside your revenge trading window.");
+      case "excessive risk":
+        return fmt("Complete {goal} {metric} without taking on excessive risk.");
+      case "outsized loss":
+        return fmt("Complete {goal} {metric} without taking an outsized loss.");
+      case "no stop-loss order":
+        return fmt("Complete {goal} {metric} with stop-loss protection.");
+      default:
+        break;
+    }
+  }
+
+  // 2–3 mistakes selected
+  return fmt("Complete {goal} {metric} without making a risk management error.");
+}
+
+export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExpanded, showGoals }) => {
   const { ready } = useAnalysisStatus();
 
   // Fetch insights & goals from API once analysis is ready
   const { data: insightsData = [] } = useInsights(ready);
   const { data: goalsRaw = [] } = useGoals(ready);
 
-  // Merge meta for icons/description
+  // Enrich raw goals with icon + computed description
   const goalsData = goalsRaw.map((g) => ({
     ...g,
-    icon: goalMeta[g.title as keyof typeof goalMeta]?.icon ?? "",
-    description: goalMeta[g.title as keyof typeof goalMeta]?.description ?? "",
+    icon: buildGoalIcon({ title: g.title, mistake_types: g.mistake_types }),
+    description: buildGoalDescription({ goal: g.goal, metric: g.metric, mistake_types: g.mistake_types, title: g.title }),
   }));
 
   const summary = insightsData.find(i => i.priority === 0);
@@ -171,6 +245,10 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
         </div>
       </div>
       <div className={styles.centerColumn}>
+        {showGoals ? (
+          <GoalsList />
+        ) : (
+        <>
         {summary && (
           <div className={styles.insightsSection}>
             <h2 className={styles.insightsHeading}>Insights</h2>
@@ -207,6 +285,8 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
         <div className={styles.sectionTitle}>Loss Consistency</div>
         <LossConsistencyChart losses={losses.length ? losses : tradeLosses} mean={meanLoss} std={stdLoss} />
         {children}
+        </>
+        )}
       </div>
       <div className={styles.rightColumn}>
         <TradesTable trades={tradesData} />

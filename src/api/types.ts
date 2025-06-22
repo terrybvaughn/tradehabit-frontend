@@ -97,4 +97,16 @@ export interface Goals {
   goal: number;
   progress: number; // fraction 0-1
   title: string;
+
+  // ─── Fields required for user-defined goals ──────────────────────────────
+  id: string;
+  metric: "trades" | "days";
+  mistake_types: string[];
+  start_date: string; // ISO YYYY-MM-DD
+
+  /**
+   * Optional error message returned by the backend when a goal configuration
+   * is invalid (e.g., unsupported metric). Present only for that goal.
+   */
+  error?: string;
 } 

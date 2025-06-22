@@ -11,9 +11,11 @@ interface HeaderProps {
   setInsightsExpanded: (expanded: boolean) => void;
   openUploadModal: () => void;
   showNav: boolean;
+  setShowGoals: (v: boolean) => void;
+  showGoals: boolean;
 }
 
-export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, showNav }) => {
+export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, showNav, setShowGoals, showGoals }) => {
   const { ready } = useAnalysisStatus();
 
   return (
@@ -27,18 +29,39 @@ export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, 
       {/* ------------ right side ------------- */}
       {showNav && ready && (
       <nav className={styles.nav} aria-label="Primary">
-        <a className={styles.link} href="#" onClick={() => setInsightsExpanded(false)}>Dashboard</a>
         <a
           className={styles.link}
           href="#"
           onClick={(e) => {
             e.preventDefault();
+            setShowGoals(false);
+            setInsightsExpanded(false);
+          }}
+        >
+          Dashboard
+        </a>
+        <a
+          className={styles.link}
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setShowGoals(false);
             setInsightsExpanded(true);
           }}
         >
           Insights
         </a>
-        <a className={styles.link} href="#">Goals</a>
+        <a
+          className={`${styles.link} ${showGoals ? styles.active : ""}`}
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setInsightsExpanded(false);
+            setShowGoals(true);
+          }}
+        >
+          Goals
+        </a>
 
         <div className={styles.buttonGroup}>
           <button
