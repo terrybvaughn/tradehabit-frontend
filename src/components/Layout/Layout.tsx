@@ -15,6 +15,7 @@ interface LayoutProps {
 
 export const Layout: FC<LayoutProps> = ({ children }) => {
   const [insightsExpanded, setInsightsExpanded] = useState(false);
+  const [showGoals, setShowGoals] = useState(false);
   const { ready } = useAnalysisStatus();
 
   // Upload modal is open when analysis not ready, or when manually toggled
@@ -35,11 +36,17 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
         setInsightsExpanded={setInsightsExpanded} 
         openUploadModal={() => setUploadOpen(true)} 
         showNav={!uploadOpen && ready}
+        setShowGoals={setShowGoals}
+        showGoals={showGoals}
       />
       <Divider />
       {/* Hide body until analysis ready and modal closed */}
       {ready && !uploadOpen && (
-        <Body insightsExpanded={insightsExpanded} setInsightsExpanded={setInsightsExpanded}>
+        <Body
+          insightsExpanded={insightsExpanded}
+          setInsightsExpanded={setInsightsExpanded}
+          showGoals={showGoals}
+        >
           {children}
         </Body>
       )}
