@@ -118,8 +118,8 @@ export const UploadModal: FC<UploadModalProps> = ({ open, onClose }) => {
                 <li>Log in to the NinjaTrader Account Dashboard.</li>
                 <li>Select <strong>Statements</strong> from the User Profile menu at the top-right.</li>
                 <li>Choose <strong>Orders</strong> from the Report Type dropdown.</li>
-                <li>Select a date range from the Date dropdown.</li>
-                <li>Do not add any filters in the Filter dropdown.</li>
+                <li>Select a <strong>date range</strong> from the Date dropdown.</li>
+                <li><strong>Do not add any filters</strong> in the Filter dropdown.</li>
                 <li>Click the <strong>Download CSV</strong> button.</li>
                 <li>Use that file to upload to TradeHabit.</li>
               </ol>
