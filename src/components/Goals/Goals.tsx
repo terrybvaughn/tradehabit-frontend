@@ -1,12 +1,15 @@
-import type { FC } from "react";
+import { useState, type FC } from "react";
 import { useGoalsStore } from "@/state/goalsStore";
 import type { Goals as GoalType } from "@/api/types";
 import { GoalCard } from "@/components/Body/GoalCard";
+import { GoalModal } from "@/components/GoalModal/GoalModal";
+import { ConfirmDeleteModal } from "@/components/GoalModal/ConfirmDeleteModal";
 import iconCleanCheckCircle from "@/assets/images/icon-clean-check-circle.svg";
 import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
 import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import styles from "./Goals.module.css";
 import plusIcon from "@/assets/images/icon-plus-add.svg";
+import { useTrades } from "@/api/hooks";
 
 const allMistakes = [
   "no stop-loss order",
@@ -17,14 +20,18 @@ const allMistakes = [
 
 function getIcon(goal: GoalType) {
   const { title = "", mistake_types = [] } = goal as any;
-  if (mistake_types.length === 0) {
-    if (title === "Revenge Trades") return iconRevengeClock;
-    if (title === "Risk Management") return iconStopAlert;
-    return iconCleanCheckCircle;
-  }
-  if (mistake_types.length === 1 && mistake_types[0] === "revenge trade") return iconRevengeClock;
-  if (mistake_types.length === allMistakes.length && mistake_types.every((m: string) => allMistakes.includes(m))) return iconCleanCheckCircle;
-  return iconStopAlert;
+
+  // Deduce icon using mistake_types primarily; fallback to title when data incomplete
+  const isRevengeOnly = mistake_types.length === 1 && mistake_types[0] === "revenge trade";
+  const isAllMistakes = mistake_types.length === allMistakes.length && mistake_types.every((m: string) => allMistakes.includes(m));
+
+  if (isRevengeOnly || title === "Revenge Trades") return iconRevengeClock;
+  if (isAllMistakes || title === "Clean Trades") return iconCleanCheckCircle;
+  // Risk-management subset (2–3 mistakes) or explicit title
+  if ((mistake_types.length >= 1 && mistake_types.length < allMistakes.length) || title === "Risk Management") return iconStopAlert;
+
+  // Default fallback
+  return iconCleanCheckCircle;
 }
 
 function buildDescription(goal: GoalType): string {
@@ -32,10 +39,14 @@ function buildDescription(goal: GoalType): string {
 
   const fmt = (tmpl: string) => tmpl.replace("{goal}", String(target)).replace("{metric}", metric);
 
-  // Empty mistake_types
+  // Fallback to title-based logic first
+  if (title === "Revenge Trades") return fmt("Complete {goal} {metric} outside your revenge trading window.");
+  if (title === "Clean Trades") return fmt("Complete {goal} {metric} without making a mistake.");
+  if (title === "Risk Management") return fmt("Complete {goal} {metric} without making a risk management error.");
+
+  // If title not one of defaults, use mistake_types array
+
   if (mistake_types.length === 0) {
-    if (title === "Risk Management") return fmt("Complete {goal} {metric} without making a risk management error.");
-    if (title === "Revenge Trades") return fmt("Complete {goal} {metric} outside your revenge trading window.");
     return fmt("Complete {goal} {metric} without making a mistake.");
   }
 
@@ -60,18 +71,48 @@ function buildDescription(goal: GoalType): string {
     }
   }
 
-  // 2-3 mistakes subset
+  // 2–3 mistakes subset (risk-management error)
   return fmt("Complete {goal} {metric} without making a risk management error.");
 }
 
 export const Goals: FC = () => {
-  const { goals } = useGoalsStore();
+  let { goals } = useGoalsStore();
+  if (!Array.isArray(goals)) {
+    // Handle legacy persisted shape { goals: [...] }
+    if (goals && Array.isArray((goals as any).goals)) {
+      goals = (goals as any).goals;
+    } else {
+      goals = [] as any;
+    }
+  }
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create"|"edit">("create");
+  const [editingGoal, setEditingGoal] = useState<GoalType|undefined>();
+  const [deleteGoal, setDeleteGoal] = useState<GoalType|undefined>();
+  const deleteGoalAction = useGoalsStore(s=>s.deleteGoal);
+
+  // Fetch trades to determine earliest trade date
+  const { data: tradesData } = useTrades(true);
+  const earliestTradeDate = (() => {
+    const trades = tradesData?.trades ?? [];
+    if (!trades.length) return undefined;
+    const earliest = trades.reduce((min, t) => new Date(t.exitTime) < new Date(min.exitTime) ? t : min, trades[0]);
+    return earliest.exitTime.slice(0,10);
+  })();
 
   return (
     <>
       <div className={styles.headerRow}>
         <h2 className={styles.heading}>Goals</h2>
-        <button className={styles.addBtn} type="button">
+        <button
+          className={styles.addBtn}
+          type="button"
+          onClick={() => {
+            setModalMode("create");
+            setEditingGoal(undefined);
+            setModalOpen(true);
+          }}
+        >
           <img src={plusIcon} alt="" height={20} className={styles.addIcon} />
           New Goal
         </button>
@@ -83,11 +124,35 @@ export const Goals: FC = () => {
             {...(g as any)}
             icon={getIcon(g as any)}
             description={buildDescription(g as any)}
+            completedOn={(g as any).completed_on}
+            start_date={(g as any).start_date || earliestTradeDate}
+            showDetails
             className={styles.goalCardFull}
             showActions
+            onEdit={() => {
+              setModalMode("edit");
+              setEditingGoal(g);
+              setModalOpen(true);
+            }}
+            onDelete={() => setDeleteGoal(g)}
           />
         ))}
       </div>
+
+      <GoalModal
+        open={modalOpen}
+        mode={modalMode}
+        initial={editingGoal as any}
+        onClose={() => setModalOpen(false)}
+      />
+
+      <ConfirmDeleteModal
+        open={!!deleteGoal}
+        onCancel={() => setDeleteGoal(undefined)}
+        onDelete={async () => {
+          if (deleteGoal) await deleteGoalAction(deleteGoal.id);
+        }}
+      />
     </>
   );
 }; 
