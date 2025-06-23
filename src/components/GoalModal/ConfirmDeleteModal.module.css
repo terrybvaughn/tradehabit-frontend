@@ -1,0 +1,4 @@
+@import "../Modal/ModalBase.module.css";
+
+/* narrower dialog */
+.modal { width: 380px; } 

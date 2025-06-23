@@ -1,0 +1,69 @@
+/* ── Backdrop ───────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* ── Modal panel ────────────────────────── */
+.modal {
+  background: #1B2024;              /* same as GoalCard */
+  border: 1px solid #3D4A52;        /* same border */
+  border-radius: 14px;                /* same radius */  
+  font-family: "Manrope", system-ui, sans-serif;
+  box-sizing: border-box;
+  padding: 2rem;
+}
+
+/* ── Typography ─────────────────────────── */
+.title {
+  margin: 0 0 1.8rem 0;
+  font-size: 1.5rem;
+  color: #fff;
+}
+.bodyText {
+  margin: 0 0 1.5rem;
+  color: #9EADB8;
+}
+
+/* ── Footer button row ──────────────────── */
+.footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+/* ── Buttons ────────────────────────────── */
+.btnOutline {
+  background: none;
+  border: 1px solid var(--blue-600);
+  color: var(--blue-600);
+  padding: 6px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Manrope", system-ui, sans-serif;
+  font-weight: 600;
+}
+.btnPrimary {
+  background: var(--blue-600);
+  border: none;
+  color: #fff;
+  padding: 6px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Manrope", system-ui, sans-serif;
+  font-weight: 600;
+}
+.btnPrimary:disabled { opacity: 0.4; cursor: default; }
+
+.btnDanger {
+  background: #c9302c;
+  border: none;
+  color: #fff;
+  padding: 6px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: "Manrope", system-ui, sans-serif;
+  font-weight: 600;
+}
+.btnDanger:hover { background: #d9534f; } 

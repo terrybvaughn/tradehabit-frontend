@@ -1,7 +1,8 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Goals } from "@/api/types";
 import { apiClient } from "@/api/client";
+import { nanoid } from "nanoid";
 
 interface GoalDraft extends Omit<Goals, "current_streak" | "best_streak" | "progress" | "error"> {}
 
@@ -33,31 +34,34 @@ export const useGoalsStore = create<GoalsSlice>()(
       createGoal: async (goalDraft: GoalDraft) => {
         const enriched: Goals = {
           ...goalDraft,
-          // Defaults until backend fills them
           current_streak: 0,
           best_streak: 0,
           progress: 0,
         } as Goals;
-        const newGoals = [...get().goals, enriched];
+
+        const current = normalize(get().goals);
+        const newGoals = [...current, enriched];
         set({ goals: newGoals });
         await recalcGoals(newGoals, set);
       },
 
       updateGoal: async (id: string, partial: Partial<Goals>) => {
-        const newGoals = get().goals.map((g) => (g.id === id ? { ...g, ...partial } : g));
+        const current = normalize(get().goals);
+        const newGoals = current.map((g) => (g.id === id ? { ...g, ...partial } : g));
         set({ goals: newGoals });
         await recalcGoals(newGoals, set);
       },
 
       deleteGoal: async (id: string) => {
-        const newGoals = get().goals.filter((g) => g.id !== id);
+        const newGoals = normalize(get().goals).filter((g) => g.id !== id);
         set({ goals: newGoals });
         await recalcGoals(newGoals, set);
       },
     }),
     {
       name: STORAGE_KEY,
-      partialize: (state: GoalsSlice) => ({ goals: state.goals }),
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state: GoalsSlice) => state.goals, // store raw array
     },
   ),
 );
@@ -65,9 +69,16 @@ export const useGoalsStore = create<GoalsSlice>()(
 async function recalcGoals(goals: Goals[], set: (partial: Partial<GoalsSlice>) => void) {
   try {
     set({ isLoading: true });
-    const resp = await apiClient.post<Goals[]>("/api/goals/calculate", { goals });
-    // resp may return array; overwrite progress fields etc.
-    set({ goals: resp, isLoading: false });
+    const resp = await apiClient.post<any>("/api/goals/calculate", { goals });
+    const incoming = Array.isArray(resp) ? resp : resp?.goals ?? [];
+    // Merge backend-calculated fields with existing client fields (e.g., mistake_types)
+    const byId = new Map(goals.map((g) => [g.id, g]));
+    const merged = incoming.map((g: Goals) => ({
+      ...byId.get(g.id), // original goal with all client-side props
+      ...g,              // backend updates overwrite where relevant
+    }));
+    const next = ensureIds(merged);
+    set({ goals: next, isLoading: false });
   } catch (err) {
     // TODO: surface error globally (banner) – left to component layer.
     set({ isLoading: false });
@@ -80,17 +91,30 @@ async function recalcGoals(goals: Goals[], set: (partial: Partial<GoalsSlice>) =
 // This runs once on module load (app start).
 // ────────────────────────────────────────────────────────────
 if (typeof window !== "undefined") {
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    // Fire-and-forget: fetch defaults and populate store
+  if (!sessionStorage.getItem(STORAGE_KEY)) {
     apiClient
       .get<Goals[]>("/api/goals")
-      .then((goals) => {
-        // Persist via store to ensure proper write + calc
-        useGoalsStore.getState().setGoals(goals);
-      })
-      .catch(() => {
-        // Ignore; user will create goals manually
-      });
+      .then((goals) => useGoalsStore.getState().setGoals(ensureIds(goals)))
+      .catch(() => {});
+  }
+}
+
+function normalize(val: any): Goals[] {
+  if (Array.isArray(val)) return val;
+  if (val && Array.isArray(val.goals)) return val.goals as Goals[];
+  return [];
+}
+
+function ensureIds(arr: Goals[]): Goals[] {
+  return arr.map((g) => ({ ...g, id: g.id ?? nanoid() }));
+}
+
+// Helper to seed defaults (used from upload hook)
+export async function seedDefaultGoals() {
+  try {
+    const goals = await apiClient.get<Goals[]>("/api/goals");
+    useGoalsStore.getState().setGoals(ensureIds(goals));
+  } catch {
+    useGoalsStore.getState().setGoals([]);
   }
 } 

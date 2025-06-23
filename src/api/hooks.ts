@@ -3,6 +3,7 @@ import type { UseMutationOptions } from "@tanstack/react-query";
 import { apiClient } from "./client";
 import type { AnalyzeResponse, SummaryResponse, TradesResponse, LossesResponse, Insights, Goals } from "./types";
 import { TradeHabitApiError } from "./client";
+import { useGoalsStore, seedDefaultGoals } from "@/state/goalsStore";
 
 /**
  * Hook to upload a CSV file and receive the analysis.
@@ -27,6 +28,10 @@ export const useAnalyzeCsv = (
     onSuccess: (data, variables, context) => {
       // First let the caller run (may set ready flag, close modals, etc.)
       options?.onSuccess?.(data, variables, context as any);
+
+      // Clear session goals and seed defaults for new dataset
+      useGoalsStore.getState().setGoals([]);
+      seedDefaultGoals();
 
       // Then, in the next event-loop tick, invalidate cached queries so
       // components that are now mounted will fetch the fresh data only once.

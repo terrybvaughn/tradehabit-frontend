@@ -1,0 +1,64 @@
+@import "../Modal/ModalBase.module.css";
+
+/* width override */
+.modal { width: 407px; max-width: 90vw; }
+
+/* existing form-specific rules (row, inputs, etc.) stay here … */
+
+.inputNumber,
+.inputText,
+.datePicker {
+  background: #FFF;
+  border: 1px solid #3D4A52;
+  border-radius: 4px;
+  color: #1B2024;
+  padding: 6px 8px;
+  font-size: 1rem;
+  font-family: "Roboto", system-ui, sans-serif;
+}
+
+.select {
+  background: #FFF;
+  border: 1px solid #3D4A52;
+  border-radius: 4px;
+  color: #1B2024;
+  font-size: 1rem;
+  font-family: "Roboto", system-ui, sans-serif;
+  height: 35px;
+  padding: 2px;
+  box-sizing: border-box;
+  margin: 0 0.5rem;
+}
+
+.inputNumber {
+  width: 3rem;
+  height: 21px;
+  margin: 0 0.5rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  margin: -10px 0 30px -3px;
+  color: #9EADB8;
+  font-size: 1rem;
+}
+
+.checkboxGroup input[type="checkbox"] {
+  margin-right: 0.6rem;
+  margin-top: -.4rem;
+}
+
+/* Row container for Goal Name + Start Date */
+.bodyText {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 1rem;
+}
+
+.inputText {
+  height: 21px;
+} 
