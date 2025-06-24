@@ -7,7 +7,9 @@ import { Header } from "@/components/Header/Header";
 import { Divider } from "@/components/Divider/Divider";
 import { Body } from "@/components/Body/Body";
 import { UploadModal } from "@/components/UploadModal/UploadModal";
+import { SettingsModal } from "@/components/SettingsModal/SettingsModal";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
+import { useSettingsStore } from "@/state/settingsStore";
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,6 +22,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
 
   // Upload modal is open when analysis not ready, or when manually toggled
   const [uploadOpen, setUploadOpen] = useState(!ready);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Automatically show when ready becomes false (e.g., on initial load)
   useEffect(() => {
@@ -28,6 +31,13 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
     }
   }, [ready]);
 
+  // Reset thresholds whenever the upload modal is shown (fresh dataset expected)
+  useEffect(() => {
+    if (uploadOpen) {
+      useSettingsStore.getState().reset();
+    }
+  }, [uploadOpen]);
+
   const closeUploadModal = () => setUploadOpen(false);
 
   return (
@@ -35,6 +45,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
       <Header 
         setInsightsExpanded={setInsightsExpanded} 
         openUploadModal={() => setUploadOpen(true)} 
+        openSettingsModal={() => setSettingsOpen(true)}
         showNav={!uploadOpen && ready}
         setShowGoals={setShowGoals}
         showGoals={showGoals}
@@ -52,6 +63,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
       )}
 
       <UploadModal open={uploadOpen} onClose={closeUploadModal} />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 };

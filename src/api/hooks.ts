@@ -4,6 +4,7 @@ import { apiClient } from "./client";
 import type { AnalyzeResponse, SummaryResponse, TradesResponse, LossesResponse, Insights, Goals } from "./types";
 import { TradeHabitApiError } from "./client";
 import { useGoalsStore, seedDefaultGoals } from "@/state/goalsStore";
+import { useSettingsStore } from "@/state/settingsStore";
 
 /**
  * Hook to upload a CSV file and receive the analysis.
@@ -32,6 +33,9 @@ export const useAnalyzeCsv = (
       // Clear session goals and seed defaults for new dataset
       useGoalsStore.getState().setGoals([]);
       seedDefaultGoals();
+
+      // Reset saved thresholds to defaults on new dataset
+      useSettingsStore.getState().reset();
 
       // Then, in the next event-loop tick, invalidate cached queries so
       // components that are now mounted will fetch the fresh data only once.

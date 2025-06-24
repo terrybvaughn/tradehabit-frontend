@@ -1,0 +1,59 @@
+.modal {
+  width: 480px;
+}
+
+.sliderRow {
+  margin-bottom: 1.4rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.currentValue {
+  font-size: 14px;
+  color: #FFFFFF;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  margin-left: 0.5rem;
+  margin-top: -0.35rem;
+}
+
+.label {
+  font-size: 14px;
+  color: #9EADB8;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.rangeWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rangeWrapper input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue-600);
+  cursor: pointer;
+}
+
+.rangeLabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #9EADB8;
+  margin-top: 4px;
+}
+
+.value {
+  /* old placement; keep compatibility if needed */
+}
+
+.errorMsg {
+  color: #c9302c;
+  margin-top: 8px;
+  font-size: 13px;
+} 
