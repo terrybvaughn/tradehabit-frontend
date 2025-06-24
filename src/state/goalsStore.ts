@@ -85,19 +85,10 @@ async function recalcGoals(goals: Goals[], set: (partial: Partial<GoalsSlice>) =
   }
 }
 
-// ────────────────────────────────────────────────────────────
-// Initial bootstrap – if the LocalStorage key is empty, seed it
-// with the backend defaults.
-// This runs once on module load (app start).
-// ────────────────────────────────────────────────────────────
-if (typeof window !== "undefined") {
-  if (!sessionStorage.getItem(STORAGE_KEY)) {
-    apiClient
-      .get<Goals[]>("/api/goals")
-      .then((goals) => useGoalsStore.getState().setGoals(ensureIds(goals)))
-      .catch(() => {});
-  }
-}
+// Note: we no longer fetch default goals on app start.
+// Instead, `seedDefaultGoals` is called after the user uploads a dataset via
+// `useAnalyzeCsv` (see api/hooks.ts). This ensures the backend has trading
+// data available so /api/goals returns 200.
 
 function normalize(val: any): Goals[] {
   if (Array.isArray(val)) return val;

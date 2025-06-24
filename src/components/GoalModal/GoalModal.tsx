@@ -96,13 +96,8 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
     }
   }, [open, mode, initial, earliestTradeDate]);
 
-  // auto-suggest title when mistakes change (create mode only)
-  useEffect(() => {
-    if (mode === "create") {
-      setTitle(titleSuggestion(mistakes));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mistakes, mode]);
+  // Suggested title shown as placeholder (create mode only)
+  const suggestedTitle = useMemo(() => (mode === "create" ? titleSuggestion(mistakes) : ""), [mistakes, mode]);
 
   if (!open) return null;
 
@@ -110,7 +105,7 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
   const goalNum = parseInt(goal, 10);
   const goalValid = !Number.isNaN(goalNum) && goalNum > 0;
   const mistakesValid = Array.isArray(mistakes) && mistakes.length > 0;
-  const titleRegex = /^[A-Za-z0-9 _\-.']{1,40}$/;
+  const titleRegex = /^[A-Za-z0-9 _\-.']{1,24}$/;
   const titleValid = titleRegex.test(title);
   const saveEnabled = goalValid && mistakesValid && titleValid && startDate;
   const nextEnabled = true; // obsolete
@@ -182,8 +177,9 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
               type="text"
               className={styles.inputText}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Clean Trades"
+              onChange={(e) => setTitle(e.target.value.slice(0,24))}
+              maxLength={24}
+              placeholder={suggestedTitle || "Goal Name"}
             />
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
