@@ -10,12 +10,13 @@ import { useAnalysisStatus } from "@/AnalysisStatusContext";
 interface HeaderProps {
   setInsightsExpanded: (expanded: boolean) => void;
   openUploadModal: () => void;
+  openSettingsModal: () => void;
   showNav: boolean;
   setShowGoals: (v: boolean) => void;
   showGoals: boolean;
 }
 
-export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, showNav, setShowGoals, showGoals }) => {
+export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, openSettingsModal, showNav, setShowGoals, showGoals }) => {
   const { ready } = useAnalysisStatus();
 
   return (
@@ -81,6 +82,7 @@ export const Header: FC<HeaderProps> = ({ setInsightsExpanded, openUploadModal, 
             className={styles.buttonGray} 
             type="button" 
             aria-label="Settings"
+            onClick={openSettingsModal}
           >
             <img 
               src={settingsIcon} 
