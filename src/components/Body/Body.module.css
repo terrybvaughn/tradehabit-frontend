@@ -100,10 +100,26 @@
 .goalsRow {
   display: flex;
   flex-direction: row;
-  gap: 24px;
+  gap: 2px;
   overflow-x: auto;
   padding-bottom: 8px;
   margin-bottom: 32px;
+}
+
+.goalsRowWrapper {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.goalsRowWrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(to right, rgba(18,20,23,0) 0%, #121417 100%);
 }
 
 .goalCard {
@@ -119,6 +135,7 @@
   box-sizing: border-box;
   flex-shrink: 0;
   position: relative;
+  margin-right: 16px;
 }
 
 .goalCardHeader {
@@ -341,7 +358,7 @@
 }
 
 .summaryLink:hover {
-  color: #D2FF31;
+  color: #5FCB3A;
 }
 
 .lossTooltipLine {
@@ -380,4 +397,10 @@
 
 .actionBtnGray:hover {
   background: #4D5A60;
+}
+
+.noGoalsMsg {
+  font-size: 14px;
+  color: #9EADB8;
+  margin-bottom: 32px;
 }

@@ -2,14 +2,13 @@ import type { FC, ReactNode } from "react";
 import styles from "./Body.module.css";
 import { DonutChart } from "./DonutChart";
 import { GoalCard } from "./GoalCard";
-import iconCleanCheckCircle from "@/assets/images/icon-clean-check-circle.svg";
-import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
-import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import { TradesTable } from "./TradesTable";
 import { LossConsistencyChart } from "./LossConsistencyChart";
-import { useSummary, useTrades, useLosses, useInsights, useGoals } from "@/api/hooks";
+import { useSummary, useTrades, useLosses, useInsights } from "@/api/hooks";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
 import { Goals as GoalsList } from "@/components/Goals/Goals";
+import { useGoalsStore } from "@/state/goalsStore";
+import { getIcon, buildDescription } from "@/utils/goalDisplay";
 
 interface BodyProps {
   children: ReactNode;
@@ -18,106 +17,27 @@ interface BodyProps {
   showGoals: boolean;
 }
 
-// Icons for each default goal title
-const goalIconMap = {
-  "Clean Trades": iconCleanCheckCircle,
-  "Risk Management": iconStopAlert,
-  "Revenge Trades": iconRevengeClock,
-} as const;
-
-type BuildIconParams = { title?: string; mistake_types?: string[] };
-function buildGoalIcon({ title = "", mistake_types = [] }: BuildIconParams) {
-  // iconCleanCheckCircle for clean trades, iconRevengeClock for revenge, else stopAlert
-  if (mistake_types.length === 0) {
-    if (title === "Revenge Trades") return iconRevengeClock;
-    if (title === "Risk Management") return iconStopAlert;
-    return iconCleanCheckCircle;
-  }
-
-  // only revenge trade selected
-  if (mistake_types.length === 1 && mistake_types[0] === "revenge trade") {
-    return iconRevengeClock;
-  }
-
-  // all 4 mistakes chosen -> clean check icon
-  const all = [
-    "no stop-loss order",
-    "excessive risk",
-    "outsized loss",
-    "revenge trade",
-  ];
-  if (mistake_types.length === all.length && mistake_types.every((m) => all.includes(m))) {
-    return iconCleanCheckCircle;
-  }
-
-  // default
-  return iconStopAlert;
-}
-
-/**
- * Generate a human-readable description for a goal based on its configured
- * mistake_types and metric. Mirrors the rules defined in the Goals feature spec.
- */
-type BuildDescParams = { goal: number; metric?: string; mistake_types?: string[]; title?: string };
-function buildGoalDescription({ goal, metric = "trades", mistake_types = [], title = "" }: BuildDescParams) {
-  const all = [
-    "no stop-loss order",
-    "excessive risk",
-    "outsized loss",
-    "revenge trade",
-  ];
-
-  // Helper to inject numbers / metric into template
-  const fmt = (tmpl: string) => tmpl.replace("{goal}", goal.toString()).replace("{metric}", metric);
-
-  // Resolve titles fallback when mistake_types is empty (legacy defaults)
-  if (mistake_types.length === 0) {
-    if (title === "Risk Management") {
-      return fmt("Complete {goal} {metric} without making a risk management error.");
-    }
-    if (title === "Revenge Trades") {
-      return fmt("Complete {goal} {metric} outside your revenge trading window.");
-    }
-    // Empty & any other title defaults to Clean Trades description
-    return fmt("Complete {goal} {metric} without making a mistake.");
-  }
-
-  // Case 1b: explicitly all mistakes selected
-  if (mistake_types.length === all.length && mistake_types.every((m) => all.includes(m))) {
-    return fmt("Complete {goal} {metric} without making a mistake.");
-  }
-
-  if (mistake_types.length === 1) {
-    switch (mistake_types[0]) {
-      case "revenge trade":
-        return fmt("Complete {goal} {metric} outside your revenge trading window.");
-      case "excessive risk":
-        return fmt("Complete {goal} {metric} without taking on excessive risk.");
-      case "outsized loss":
-        return fmt("Complete {goal} {metric} without taking an outsized loss.");
-      case "no stop-loss order":
-        return fmt("Complete {goal} {metric} with stop-loss protection.");
-      default:
-        break;
-    }
-  }
-
-  // 2–3 mistakes selected
-  return fmt("Complete {goal} {metric} without making a risk management error.");
-}
-
 export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExpanded, showGoals }) => {
   const { ready } = useAnalysisStatus();
 
   // Fetch insights & goals from API once analysis is ready
   const { data: insightsData = [] } = useInsights(ready);
-  const { data: goalsRaw = [] } = useGoals(ready);
+
+  // Retrieve goals from session-storage store (already seeded on app load)
+  let goalsRaw = useGoalsStore((s) => s.goals);
+  if (!Array.isArray(goalsRaw)) {
+    if (goalsRaw && Array.isArray((goalsRaw as any).goals)) {
+      goalsRaw = (goalsRaw as any).goals as any;
+    } else {
+      goalsRaw = [] as any;
+    }
+  }
 
   // Enrich raw goals with icon + computed description
-  const goalsData = goalsRaw.map((g) => ({
+  const goalsData = goalsRaw.map((g: any) => ({
     ...g,
-    icon: buildGoalIcon({ title: g.title, mistake_types: g.mistake_types }),
-    description: buildGoalDescription({ goal: g.goal, metric: g.metric, mistake_types: g.mistake_types, title: g.title }),
+    icon: getIcon(g),
+    description: buildDescription(g),
   }));
 
   const summary = insightsData.find(i => i.priority === 0);
@@ -277,11 +197,17 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
           </div>
         )}
         <div className={styles.sectionTitle}>Goals</div>
-        <div className={styles.goalsRow}>
-          {goalsData.map((goal, i) => (
-            <GoalCard key={i} {...goal} />
-          ))}
-        </div>
+        {goalsData.length === 0 ? (
+          <p className={styles.noGoalsMsg}>Start setting some goals to improve your trading discipline.</p>
+        ) : (
+          <div className={styles.goalsRowWrapper}>
+            <div className={styles.goalsRow}>
+              {goalsData.slice().reverse().map((goal, i) => (
+                <GoalCard key={i} {...goal} suppressCompletionMessage />
+              ))}
+            </div>
+          </div>
+        )}
         <div className={styles.sectionTitle}>Loss Consistency</div>
         <LossConsistencyChart losses={losses.length ? losses : tradeLosses} mean={meanLoss} std={stdLoss} />
         {children}

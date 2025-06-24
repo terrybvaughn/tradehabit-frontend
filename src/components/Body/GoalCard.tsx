@@ -2,6 +2,7 @@ import type { FC } from "react";
 import styles from "./Body.module.css";
 import editIcon from "@/assets/images/icon-edit-pencil.svg";
 import deleteIcon from "@/assets/images/icon-delete-trash.svg";
+import iconAward from "@/assets/images/icon-award.svg";
 
 const GREEN = "#5FCB3A";
 
@@ -21,12 +22,14 @@ interface GoalCardProps {
   best_streak?: number;
   metric?: "trades" | "days";
   showDetails?: boolean;
+  /** When true, the title will be shown as-is even if goal is completed. */
+  suppressCompletionMessage?: boolean;
 }
 
-export const GoalCard: FC<GoalCardProps> = ({ title, icon, progress, goal, description, className, showActions = false, onEdit, onDelete, completedOn, start_date, current_streak, best_streak, metric = "trades", showDetails = false }) => {
+export const GoalCard: FC<GoalCardProps> = ({ title, icon, progress, goal, description, className, showActions = false, onEdit, onDelete, completedOn, start_date, current_streak, best_streak, metric = "trades", showDetails = false, suppressCompletionMessage = false }) => {
   const isCompleted = progress >= 1;
   let displayTitle = title;
-  if (isCompleted) {
+  if (isCompleted && !suppressCompletionMessage) {
     if (completedOn) {
       displayTitle = `${title} – goal completed on ${formatDate(completedOn)}. Congratulations! 🎉`;
     } else {
@@ -34,10 +37,12 @@ export const GoalCard: FC<GoalCardProps> = ({ title, icon, progress, goal, descr
     }
   }
 
+  const iconSrc = isCompleted ? iconAward : icon;
+
   return (
     <div className={`${styles.goalCard} ${className ?? ""}`}>
       <div className={styles.goalCardHeader}>
-        <img src={icon} alt="" className={styles.goalIcon} />
+        <img src={iconSrc} alt="" className={styles.goalIcon} />
         <span className={styles.goalTitle}>{displayTitle}</span>
         {showActions && (
           <div className={styles.goalActions}>

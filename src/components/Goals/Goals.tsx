@@ -4,76 +4,10 @@ import type { Goals as GoalType } from "@/api/types";
 import { GoalCard } from "@/components/Body/GoalCard";
 import { GoalModal } from "@/components/GoalModal/GoalModal";
 import { ConfirmDeleteModal } from "@/components/GoalModal/ConfirmDeleteModal";
-import iconCleanCheckCircle from "@/assets/images/icon-clean-check-circle.svg";
-import iconStopAlert from "@/assets/images/icon-stop-alert.svg";
-import iconRevengeClock from "@/assets/images/icon-revenge-clock.svg";
 import styles from "./Goals.module.css";
 import plusIcon from "@/assets/images/icon-plus-add.svg";
 import { useTrades } from "@/api/hooks";
-
-const allMistakes = [
-  "no stop-loss order",
-  "excessive risk",
-  "outsized loss",
-  "revenge trade",
-];
-
-function getIcon(goal: GoalType) {
-  const { title = "", mistake_types = [] } = goal as any;
-
-  // Deduce icon using mistake_types primarily; fallback to title when data incomplete
-  const isRevengeOnly = mistake_types.length === 1 && mistake_types[0] === "revenge trade";
-  const isAllMistakes = mistake_types.length === allMistakes.length && mistake_types.every((m: string) => allMistakes.includes(m));
-
-  if (isRevengeOnly || title === "Revenge Trades") return iconRevengeClock;
-  if (isAllMistakes || title === "Clean Trades") return iconCleanCheckCircle;
-  // Risk-management subset (2–3 mistakes) or explicit title
-  if ((mistake_types.length >= 1 && mistake_types.length < allMistakes.length) || title === "Risk Management") return iconStopAlert;
-
-  // Default fallback
-  return iconCleanCheckCircle;
-}
-
-function buildDescription(goal: GoalType): string {
-  const { goal: target, metric = "trades", mistake_types = [], title = "" } = goal as any;
-
-  const fmt = (tmpl: string) => tmpl.replace("{goal}", String(target)).replace("{metric}", metric);
-
-  // Fallback to title-based logic first
-  if (title === "Revenge Trades") return fmt("Complete {goal} {metric} outside your revenge trading window.");
-  if (title === "Clean Trades") return fmt("Complete {goal} {metric} without making a mistake.");
-  if (title === "Risk Management") return fmt("Complete {goal} {metric} without making a risk management error.");
-
-  // If title not one of defaults, use mistake_types array
-
-  if (mistake_types.length === 0) {
-    return fmt("Complete {goal} {metric} without making a mistake.");
-  }
-
-  // All mistakes
-  if (mistake_types.length === allMistakes.length && mistake_types.every((m: string) => allMistakes.includes(m))) {
-    return fmt("Complete {goal} {metric} without making a mistake.");
-  }
-
-  // Single mistake
-  if (mistake_types.length === 1) {
-    switch (mistake_types[0]) {
-      case "revenge trade":
-        return fmt("Complete {goal} {metric} outside your revenge trading window.");
-      case "excessive risk":
-        return fmt("Complete {goal} {metric} without taking on excessive risk.");
-      case "outsized loss":
-        return fmt("Complete {goal} {metric} without taking an outsized loss.");
-      case "no stop-loss order":
-        return fmt("Complete {goal} {metric} with stop-loss protection.");
-      default:
-        break;
-    }
-  }
-
-  // 2–3 mistakes subset (risk-management error)
-  return fmt("Complete {goal} {metric} without making a risk management error.");
-}
+import { getIcon, buildDescription } from "@/utils/goalDisplay";
 
 export const Goals: FC = () => {
   let { goals } = useGoalsStore();
