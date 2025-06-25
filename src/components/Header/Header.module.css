@@ -1,8 +1,14 @@
 .wrapper {
+    position: sticky;  /* keep at top while columns scroll */
+    top: 0;
+    z-index: 2000;
     height: 52px;
+    width: 1220px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background: #121417; /* match app background to avoid transparency */
+    margin-inline: auto;      /* centers horizontally */
   }
   
   .left {
@@ -14,6 +20,7 @@
   .brand {
     font-weight: 500;
     font-size: 16px;
+    color: #ffffff;
   }
   
   .nav {

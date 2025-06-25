@@ -41,7 +41,8 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
   const closeUploadModal = () => setUploadOpen(false);
 
   return (
-    <div className={styles.shell}>
+    <>
+      {/* Header stays pinned at the top */}
       <Header 
         setInsightsExpanded={setInsightsExpanded} 
         openUploadModal={() => setUploadOpen(true)} 
@@ -50,20 +51,27 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
         setShowGoals={setShowGoals}
         showGoals={showGoals}
       />
-      <Divider />
-      {/* Hide body until analysis ready and modal closed */}
-      {ready && !uploadOpen && (
-        <Body
-          insightsExpanded={insightsExpanded}
-          setInsightsExpanded={setInsightsExpanded}
-          showGoals={showGoals}
-        >
-          {children}
-        </Body>
-      )}
 
-      <UploadModal open={uploadOpen} onClose={closeUploadModal} />
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-    </div>
+      {/* Full-width divider */}
+      <Divider />
+
+      {/* Main content area constrained to the centered shell */}
+      <div className={styles.shell}>
+        {/* Hide body until analysis ready and modal closed */}
+        {ready && !uploadOpen && (
+          <Body
+            insightsExpanded={insightsExpanded}
+            setInsightsExpanded={setInsightsExpanded}
+            showGoals={showGoals}
+          >
+            {children}
+          </Body>
+        )}
+
+        {/* Modals overlay the full screen */}
+        <UploadModal open={uploadOpen} onClose={closeUploadModal} />
+        <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      </div>
+    </>
   );
 };

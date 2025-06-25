@@ -1,7 +1,7 @@
 .shell {
-    width: 1200px;
-    min-height: 100vh;
+    height: calc(100vh - 53px); /* full height minus header (52) + divider (1) */
     margin-inline: auto;      /* centers horizontally */
     display: flex;
     flex-direction: column;
+    overflow: hidden;         /* prevent page scroll */
   }
