@@ -1,6 +1,5 @@
 // src/components/Header/Header.tsx
 import type { FC } from "react";
-import { useState } from "react";
 import styles from "./Header.module.css";
 import logo from "@/assets/images/th-mark.svg"; // aliased path
 import settingsIcon from "@/assets/images/icon-settings.svg"; // aliased path

@@ -1,4 +1,4 @@
-import { type FC, useRef, useLayoutEffect, useState, useEffect } from "react";
+import { type FC, useRef, useState, useEffect } from "react";
 import styles from "./Body.module.css";
 
 interface Loss {
@@ -99,7 +99,6 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
   const mean = meanProp ?? 0;
   const std = stdProp ?? 0;
 
-  const [svgOffset, setSvgOffset] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -149,14 +148,6 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
   function formatDateTime(dt?: string) {
     return dt ? dt.replace("T", " ").slice(0, 19) : "";
   }
-
-  useLayoutEffect(() => {
-    if (svgRef.current && scrollAreaRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      const parentRect = scrollAreaRef.current.getBoundingClientRect();
-      setSvgOffset(rect.left - parentRect.left);
-    }
-  }, [width]);
 
   return (
     <div className={styles.lossChartContainer} style={{ position: "relative" }}>
