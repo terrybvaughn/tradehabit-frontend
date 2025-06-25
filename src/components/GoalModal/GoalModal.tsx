@@ -35,7 +35,6 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
   const updateGoal = useGoalsStore((s) => s.updateGoal);
 
   // ─── Form state ────────────────────────────────────────────
-  const [step] = useState(1);
   const [goal, setGoal] = useState<string>("");
   const [metric, setMetric] = useState<"trades" | "days">("trades");
   const [mistakes, setMistakes] = useState<MistakeKey[]>([]);
@@ -108,7 +107,6 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
   const titleRegex = /^[A-Za-z0-9 _\-.']{1,24}$/;
   const titleValid = titleRegex.test(title);
   const saveEnabled = goalValid && mistakesValid && titleValid && startDate;
-  const nextEnabled = true; // obsolete
 
   // ─── Handlers ──────────────────────────────────────────────
   const toggleMistake = (key: MistakeKey) => {
@@ -203,4 +201,4 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
       </form>
     </div>
   );
-}; 
+};

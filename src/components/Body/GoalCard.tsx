@@ -26,7 +26,7 @@ interface GoalCardProps {
   suppressCompletionMessage?: boolean;
 }
 
-export const GoalCard: FC<GoalCardProps> = ({ title, icon, progress, goal, description, className, showActions = false, onEdit, onDelete, completedOn, start_date, current_streak, best_streak, metric = "trades", showDetails = false, suppressCompletionMessage = false }) => {
+export const GoalCard: FC<GoalCardProps> = ({ title, icon, progress, description, className, showActions = false, onEdit, onDelete, completedOn, start_date, current_streak, best_streak, metric = "trades", showDetails = false, suppressCompletionMessage = false }) => {
   const isCompleted = progress >= 1;
   let displayTitle = title;
   if (isCompleted && !suppressCompletionMessage) {
