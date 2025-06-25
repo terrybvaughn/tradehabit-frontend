@@ -13,7 +13,7 @@ export const DonutChart: FC<DonutChartProps> = ({ value, label }) => {
   const offset = circumference * (1 - value / 100);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ paddingTop: 24, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
         <circle
           cx={size / 2}

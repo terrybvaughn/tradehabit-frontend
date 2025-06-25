@@ -6,4 +6,7 @@
   /* full-bleed trick */
   width: 100vw;                 /* stretch across the viewport   */
   margin-left: calc(50% - 50vw);/* pull left to cancel centering */
+  position: sticky;  /* keep at top while columns scroll */
+  top: 52px;                    /* header height */
+  z-index: 1500;                /* above scrolling content */
 }

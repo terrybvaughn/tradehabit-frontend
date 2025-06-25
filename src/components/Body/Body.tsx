@@ -64,14 +64,14 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   const excessiveRisk = mistakeCounts["excessive risk"] ?? 0;
   const outsizedLoss = mistakeCounts["outsized loss"] ?? 0;
   const revengeTrade = mistakeCounts["revenge trade"] ?? 0;
-  const noStopLoss = mistakeCounts["no stop-loss"] ?? 0;
+  const noStopLoss = mistakeCounts["no stop-loss order"] ?? 0;
 
   const streakCurrent = summaryData?.streak_current ?? 0;
   const streakRecord = summaryData?.streak_record ?? 0;
 
-  // Compute losses for LossConsistencyChart from live trades
+  // Use pnl to determine actual losing trades (negative PnL)
   const tradeLosses = tradesData
-    .filter((t) => t.pointsLost > 0)
+    .filter((t) => t.pnl < 0)
     .map((t, idx) => ({
       hasMistake: t.mistakes.length > 0,
       lossIndex: idx + 1,
@@ -84,6 +84,15 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
   const losses = lossesResp?.losses ?? [];
   const meanLoss = lossesResp?.meanPointsLost ?? 0;
   const stdLoss = lossesResp?.stdDevPointsLost ?? 0;
+
+  // Merge backend losses with trade mistakes to flag any mistake type, preserving tooltip fields.
+  const lossesMerged = losses.map((loss) => {
+    const trade = tradesData.find((t) => t.id === loss.tradeId);
+    return {
+      ...loss,
+      hasMistake: trade ? trade.mistakes.length > 0 : loss.hasMistake,
+    };
+  });
 
   // Handler for expanding insights
   const handleExpandInsights = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -175,7 +184,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
             <div
               className={styles.insightsSummary}
               style={{
-                maxHeight: insightsExpanded ? 1000 : 90,
+                maxHeight: insightsExpanded ? 1000 : 100,
                 overflow: "hidden",
                 transition: "max-height 0.5s cubic-bezier(.4,0,.2,1)",
               }}
@@ -209,7 +218,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
           </div>
         )}
         <div className={styles.sectionTitle}>Loss Consistency</div>
-        <LossConsistencyChart losses={losses.length ? losses : tradeLosses} mean={meanLoss} std={stdLoss} />
+        <LossConsistencyChart losses={losses.length ? lossesMerged : tradeLosses} mean={meanLoss} std={stdLoss} />
         {children}
         </>
         )}

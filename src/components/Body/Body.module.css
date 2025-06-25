@@ -1,5 +1,5 @@
 .body {
-  width: 1200px;
+  width: 1220px;
   min-height: calc(100vh - 53px); /* 52px header + 1px divider */
   margin-inline: auto;
   display: flex;
@@ -7,23 +7,34 @@
 
 .leftColumn {
   width: 200px;
-  min-height: calc(100vh - 53px);
-  margin: 48px 20px 0 0;
+  height: calc(100vh - 94px); /* exact height minus header & divider */
+  margin: 20px 20px 0 0;
+  overflow-y: auto;            /* independent scrolling */
+  position: relative;          /* for overlay or mask */
+  /* Fade-out effect for content scrolled under top edge */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 24px);
+  mask-image: linear-gradient(to bottom, transparent 0px, black 24px);
 }
 
 .centerColumn {
-  width: 680px;
-  min-height: calc(100vh - 53px);
-  margin: 48px 20px 0 20px;
+  width: 700px;
+  height: calc(100vh - 30px);
+  margin: 20px 20px 0 20px;
+  overflow-y: auto;            /* independent scrolling */
+  overscroll-behavior: contain; /* prevent body scroll bounce on mobile */
+  position: relative;          /* establish containing block for overlay */
+  /* Fade-out effect for content scrolled under top edge */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 24px);
+  mask-image: linear-gradient(to bottom, transparent 0px, black 24px);
 }
 
 .rightColumn {
   width: 320px;
-  height: calc(100vh - 53px - 70px);
   min-height: unset;
-  margin: 48px 0 0 20px;
+  margin: 20px 0 0 20px;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 94px);
 }
 
 .section {
@@ -79,7 +90,8 @@
   font-size: 22px;
   font-weight: 600;
   color: #fff;
-  margin-top: 0;
+  margin-top: 0px;
+  padding-top: 17px;
   margin-bottom: 12px;
 }
 
@@ -100,7 +112,7 @@
 .goalsRow {
   display: flex;
   flex-direction: row;
-  gap: 2px;
+  gap: 0px;
   overflow-x: auto;
   padding-bottom: 8px;
   margin-bottom: 32px;
@@ -135,7 +147,7 @@
   box-sizing: border-box;
   flex-shrink: 0;
   position: relative;
-  margin-right: 16px;
+  margin-right: 14px;
 }
 
 .goalCardHeader {
@@ -202,7 +214,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0;
+  padding: 17px 0 0 0;
   margin-top: 0px;
   margin-bottom: 1.2em;
 }

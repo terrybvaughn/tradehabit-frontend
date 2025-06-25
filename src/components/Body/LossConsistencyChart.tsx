@@ -37,8 +37,22 @@ function niceCeil(val: number) {
 }
 
 export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, mean: meanProp, std: stdProp, maxLosses = 235 }) => {
+  // Filter out entries where no points were lost (wins or breakeven trades)
+  const lossData = losses.filter((l) => l.pointsLost > 0);
+
+  // If there are no losses, render a simple placeholder and exit early
+  if (lossData.length === 0) {
+    return (
+      <div className={styles.lossChartContainer} style={{ textAlign: "center", padding: "1.5rem 0" }}>
+        <span style={{ color: "#9EADB8;", fontFamily: "Roboto, monospace", fontSize: 14 }}>
+          No losing trades to display.
+        </span>
+      </div>
+    );
+  }
+
   // Limit to maxLosses and sort by lossIndex
-  const sorted = [...losses]
+  const sorted = [...lossData]
     .sort((a, b) => a.lossIndex - b.lossIndex)
     .slice(0, maxLosses);
   const n = sorted.length;
@@ -251,7 +265,7 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
                     key={i}
                     cx={x(i)}
                     cy={y(t.pointsLost)}
-                    r={active ? 6 : 4}
+                    r={active ? 8 : 5}
                     fill={t.hasMistake ? mistakePink : cleanWhite}
                     style={{ transition: "r 0.15s ease, transform 0.15s ease" }}
                     onMouseEnter={() => {
@@ -259,7 +273,7 @@ export const LossConsistencyChart: FC<LossConsistencyChartProps> = ({ losses, me
                       if (hoverTimer.current !== null) clearTimeout(hoverTimer.current);
                       hoverTimer.current = window.setTimeout(() => {
                         setTooltipIdx(i);
-                      }, 800);
+                      }, 500);
                     }}
                     onMouseLeave={() => {
                       setHoverIdx((prev) => (prev === i ? null : prev));
