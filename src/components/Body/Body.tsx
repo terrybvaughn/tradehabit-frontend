@@ -184,7 +184,7 @@ export const Body: FC<BodyProps> = ({ children, insightsExpanded, setInsightsExp
             <div
               className={styles.insightsSummary}
               style={{
-                maxHeight: insightsExpanded ? 1000 : 100,
+                maxHeight: insightsExpanded ? 1100 : 100,
                 overflow: "hidden",
                 transition: "max-height 0.5s cubic-bezier(.4,0,.2,1)",
               }}
