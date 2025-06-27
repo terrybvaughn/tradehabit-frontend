@@ -3,7 +3,9 @@
 ![TradeHabit Dashboard](/public/TradeHabit_Dashboard_Live.png)
 A modern React-based web application for trading performance analysis and habit tracking. TradeHabit helps traders analyze their trading data, identify mistakes, track goals, and improve their trading discipline.
 
-🌐 **Live Demo:** [app.tradehab.it](https://app.tradehab.it)
+## 🚀 Live Application
+**Try TradeHabit now**: [app.tradehab.it](https://app.tradehab.it)  
+Use the demo data link if you don't have your own NinjaTrader CSV files.
 
 ## Features
 
