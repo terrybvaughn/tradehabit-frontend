@@ -1,4 +1,4 @@
-import { useRef, useState, type FC, type DragEvent, type ChangeEvent, useEffect } from "react";
+import { useRef, useState, type FC, type DragEvent, type ChangeEvent, type MouseEvent, useEffect } from "react";
 import styles from "./UploadModal.module.css";
 import { useAnalyzeCsv } from "@/api/hooks";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
@@ -92,6 +92,30 @@ export const UploadModal: FC<UploadModalProps> = ({ open, onClose }) => {
 
   const busy = (isPending || isSuccess) && !isError;
 
+  // ────────────────────────────────────────────────────────────
+  // Demo-data support
+  // File shipped in /public will be served from the site root at runtime.
+  const DEMO_CSV_PATH = "/314_synthetic_trades-FINAL.csv";
+
+  const handleDemoClick = async (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (busy) return; // Ignore if something else is uploading
+
+    try {
+      const resp = await fetch(DEMO_CSV_PATH);
+      if (!resp.ok) throw new Error("Failed to fetch demo data");
+
+      const blob = await resp.blob();
+      // Wrap into a File object so we can reuse the existing upload flow
+      const demoFile = new File([blob], "demo_trades.csv", { type: "text/csv" });
+      handleFile(demoFile);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+    }
+  };
+  // ────────────────────────────────────────────────────────────
+
   if (!open) return null;
 
   return (
@@ -151,6 +175,11 @@ export const UploadModal: FC<UploadModalProps> = ({ open, onClose }) => {
                   style={{ display: "none" }}
                   onChange={handleBrowseChange}
                 />
+                {/* Demo-data link inside drop zone */}
+                <p className={styles.demoLink}>
+                  No data? Try it out with some{" "}
+                  <a href="#" onClick={handleDemoClick}>demo data</a> instead.
+                </p>
               </div>
 
               {/* Progress bar shown during upload and finalising animation */}

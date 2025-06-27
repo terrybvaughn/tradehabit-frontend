@@ -69,6 +69,7 @@
   cursor: pointer;
   user-select: none;
   color: #c5c5c5;
+  font-weight: 600;
 }
 .dropZone:hover {
   border-color: var(--blue-600);
@@ -131,6 +132,18 @@
 .errorDetails {
   margin: 0.5rem 0 0;
   padding-left: 1.2rem;
+}
+.demoLink {
+  margin-top: 0rem;
+  font-size: 0.75rem;
+  color: #3D4A52;
+}
+.demoLink a {
+  color: var(--blue-600);
+  text-decoration: underline;
+}
+.demoLink a:hover {
+  color: #0094E2;
 }
 .box {
   background: #fff;
