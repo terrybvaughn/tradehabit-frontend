@@ -1,0 +1,95 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.modal {
+  background: #1B2024;
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  max-width: 500px;
+  width: 100%;
+  font-family: "Manrope", system-ui, sans-serif;
+}
+
+.content {
+  padding: 2rem;
+}
+
+.title {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  color: #fff;
+  text-align: left;
+}
+
+.message {
+  color: #9EADB8;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.message p {
+  margin: 0 0 1rem 0;
+}
+
+.specs {
+  background: #293338;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.specItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.specItem:last-child {
+  margin-bottom: 0;
+}
+
+.specItem strong {
+  color: #fff;
+}
+
+.suggestion {
+  font-style: italic;
+  color: #7A8A96;
+  font-size: 0.9rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}
+
+.continueBtn {
+  background: var(--blue-600, #0077b6);
+  border: none;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Manrope", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.continueBtn:hover {
+  background: #005a8b;
+}
+
+/* Hide scrollbars when warning is shown */
+body:has(.backdrop) {
+  overflow: hidden;
+} 
