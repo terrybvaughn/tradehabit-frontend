@@ -1,5 +1,6 @@
 import type { FC, ChangeEvent, FormEvent } from "react";
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import styles from "./GoalModal.module.css";
 import base from "@/components/Modal/ModalBase.module.css";
 import { nanoid } from "nanoid";
@@ -132,7 +133,7 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
     onClose();
   };
 
-  return (
+  return createPortal(
     <div className={base.backdrop}>
       <form className={`${base.modal} ${styles.modal}`} onSubmit={handleSubmit}>
         <h2 className={base.title}>{mode === "create" ? "New Goal" : "Edit Goal"}</h2>
@@ -199,6 +200,7 @@ export const GoalModal: FC<GoalModalProps> = ({ open, mode, initial, onClose }) 
           <button type="submit" className={base.btnPrimary} disabled={!saveEnabled}>Save</button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 };
