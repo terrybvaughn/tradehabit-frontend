@@ -65,10 +65,22 @@ export const TradesTable: FC<TradesTableProps> = ({ trades }) => {
         return next;
       });
 
-      // Scroll into view after a small delay to ensure the row is rendered
+      // Scroll to the row within the table container after a small delay to ensure the row is rendered
       setTimeout(() => {
-        const rowEl = tableOuterRef.current?.querySelector(`tr[data-trade-id="${tradeId}"]`);
-        rowEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const tableContainer = tableOuterRef.current;
+        const rowEl = tableContainer?.querySelector(`tr[data-trade-id="${tradeId}"]`) as HTMLTableRowElement;
+        if (tableContainer && rowEl) {
+          const rowRect = rowEl.getBoundingClientRect();
+          const containerHeight = tableContainer.clientHeight;
+          
+          // Calculate the scroll position to center the row in the container
+          const targetScrollTop = rowEl.offsetTop - (containerHeight / 2) + (rowRect.height / 2);
+          
+          tableContainer.scrollTo({
+            top: targetScrollTop,
+            behavior: "smooth"
+          });
+        }
       }, 50);
     };
     window.addEventListener("scrollToTrade", handler);
