@@ -7,6 +7,8 @@ A modern React-based web application for trading performance analysis and habit 
 **Try TradeHabit now**: [app.tradehab.it](https://app.tradehab.it)  
 Use the demo data link if you don't have your own NinjaTrader CSV files.
 
+**Shared Documentation**: See `docs/shared/` for complete TradeHabit documentation, including architecture, API specs, and feature initiatives.
+
 ## Features
 
 ### 📊 **Trading Analysis Dashboard**
