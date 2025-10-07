@@ -31,7 +31,7 @@ async function withRetry<T>(fn: () => Promise<T>, tries = 3) {
 async function callToolRunner(name: string, args: any, userText?: string) {
   // get_summary_data is always tiny
   if (name === "get_summary_data") {
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/get_summary_data`, {
+    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_summary_data`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({})
@@ -66,7 +66,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safeArgs.max_results);
     safeArgs.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    let res = await fetch(`${TOOL_RUNNER_BASE_URL}/get_endpoint_data`, {
+    let res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_endpoint_data`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safeArgs)
@@ -77,7 +77,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
       if (!res.ok) {
         // Attempt fallback only if not ok
         const fallback = { name: safeArgs.name, keys_only: true };
-        const res2 = await fetch(`${TOOL_RUNNER_BASE_URL}/get_endpoint_data`, {
+        const res2 = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_endpoint_data`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(fallback)
@@ -117,7 +117,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safe.max_results);
     safe.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/filter_trades`, {
+    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/filter_trades`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safe)
@@ -170,7 +170,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safe.max_results);
     safe.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/filter_losses`, {
+    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/filter_losses`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safe)
