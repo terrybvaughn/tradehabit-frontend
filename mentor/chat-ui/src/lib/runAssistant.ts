@@ -266,6 +266,10 @@ export async function runAssistantTurn({
   );
   logTiming("Run Creation", runStartTime);
 
+  let pollDelay = 750; // Start with 750ms
+  const maxPollDelay = 3000; // Cap at 3s
+  const backoffMultiplier = 1.5; // Increase by 50% each time
+
   while (true) {
     const retrieveStartTime = Date.now();
     run = await withRetry(() =>
@@ -317,6 +321,8 @@ export async function runAssistantTurn({
         })
       );
 
+      // Reset polling delay after tool execution
+      pollDelay = 750;
       continue;
     }
 
@@ -370,6 +376,10 @@ export async function runAssistantTurn({
       };
     }
 
-    await new Promise((r) => setTimeout(r, 600));
+    // Use adaptive polling delay with exponential backoff
+    await new Promise((r) => setTimeout(r, pollDelay));
+    
+    // Increase delay for next iteration (exponential backoff)
+    pollDelay = Math.min(pollDelay * backoffMultiplier, maxPollDelay);
   }
 }
