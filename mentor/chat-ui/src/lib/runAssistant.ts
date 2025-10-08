@@ -1,10 +1,21 @@
 // /tradehabit-backend/mentor/chat-ui/src/lib/runAssistant.ts
-import { openai, ASSISTANT_ID, TOOL_RUNNER_BASE_URL } from "./openai";
+import { openai, ASSISTANT_ID, buildToolRunnerUrl } from "./openai";
 
 type ToolCall = {
   id: string;
   type: "function";
   function: { name: string; arguments: string };
+};
+
+// --- comprehensive logging helper ---
+const logAssistantInteraction = (type: string, data: any) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[ASSISTANT_${type}] ${timestamp}`, JSON.stringify(data, null, 2));
+};
+
+const logTiming = (label: string, startTime: number) => {
+  const duration = Date.now() - startTime;
+  console.log(`[TIMING] ${label}: ${duration}ms`);
 };
 
 // --- tiny retry/backoff for 429s and blips ---
@@ -29,17 +40,49 @@ async function withRetry<T>(fn: () => Promise<T>, tries = 3) {
 
 // --- tool runner bridge ---
 async function callToolRunner(name: string, args: any, userText?: string) {
+  const toolStartTime = Date.now();
+  const url = buildToolRunnerUrl(name);
+  const payload = { ...(args || {}) };
+  
+  // Log tool call payload
+  logAssistantInteraction("TOOL_CALL_PAYLOAD", {
+    functionName: name,
+    url: url,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: payload,
+    userText: userText
+  });
+
   // get_summary_data is always tiny
   if (name === "get_summary_data") {
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_summary_data`, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({})
     });
     const text = await res.text();
+    logTiming(`Tool Call: ${name}`, toolStartTime);
+    
     try {
       const json = JSON.parse(text);
-      if (!res.ok) throw new Error(`${json.error || "tool_error"}: ${json.detail || "unknown error"}`);
+      if (!res.ok) {
+        logAssistantInteraction("TOOL_ERROR", {
+          functionName: name,
+          status: res.status,
+          error: json.error || "tool_error",
+          detail: json.detail || "unknown error"
+        });
+        throw new Error(`${json.error || "tool_error"}: ${json.detail || "unknown error"}`);
+      }
+      
+      logAssistantInteraction("TOOL_SUCCESS", {
+        functionName: name,
+        status: res.status,
+        responseSize: text.length,
+        responsePreview: JSON.stringify(json).slice(0, 200) + "..."
+      });
+      
       return json;
     } catch (e) {
       if (!res.ok) throw new Error(`tool_http_${res.status}: ${text.slice(0, 200)}`);
@@ -66,7 +109,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safeArgs.max_results);
     safeArgs.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    let res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_endpoint_data`, {
+    let res = await fetch(buildToolRunnerUrl("get_endpoint_data"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safeArgs)
@@ -77,7 +120,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
       if (!res.ok) {
         // Attempt fallback only if not ok
         const fallback = { name: safeArgs.name, keys_only: true };
-        const res2 = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/get_endpoint_data`, {
+        const res2 = await fetch(buildToolRunnerUrl("get_endpoint_data"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(fallback)
@@ -117,7 +160,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safe.max_results);
     safe.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/filter_trades`, {
+    const res = await fetch(buildToolRunnerUrl("filter_trades"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safe)
@@ -170,7 +213,7 @@ async function callToolRunner(name: string, args: any, userText?: string) {
     const req = Number(safe.max_results);
     safe.max_results = Number.isFinite(req) && req > 0 ? Math.min(req, 50) : 10;
 
-    const res = await fetch(`${TOOL_RUNNER_BASE_URL}/api/mentor/filter_losses`, {
+    const res = await fetch(buildToolRunnerUrl("filter_losses"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(safe)
@@ -196,6 +239,15 @@ export async function runAssistantTurn({
   threadId?: string;
   userText: string;
 }) {
+  const turnStartTime = Date.now();
+  
+  // Log user message
+  logAssistantInteraction("USER_MESSAGE", {
+    threadId: threadId || "new",
+    content: userText,
+    timestamp: new Date().toISOString()
+  });
+
   const thread =
     threadId ? { id: threadId } : await withRetry(() => openai.beta.threads.create());
 
@@ -206,21 +258,50 @@ export async function runAssistantTurn({
     })
   );
 
+  const runStartTime = Date.now();
   let run = await withRetry(() =>
     openai.beta.threads.runs.create(thread.id, {
       assistant_id: ASSISTANT_ID
     })
   );
+  logTiming("Run Creation", runStartTime);
 
   while (true) {
+    const retrieveStartTime = Date.now();
     run = await withRetry(() =>
       openai.beta.threads.runs.retrieve(thread.id, run.id)
     );
+    logTiming("Run Retrieve", retrieveStartTime);
+    // Log run status snapshot for visibility into polling lifecycle
+    logAssistantInteraction("RUN_STATUS", {
+      runId: run.id,
+      status: run.status,
+      hasRequiredAction: !!run.required_action,
+      toolsRequested:
+        (run.required_action?.submit_tool_outputs?.tool_calls || []).map(
+          (tc: ToolCall) => tc.function.name
+        ),
+      lastError: run.last_error || null
+    });
 
     if (run.status === "requires_action") {
       const toolCalls = (run.required_action?.submit_tool_outputs?.tool_calls ||
         []) as ToolCall[];
 
+      // Log Assistant tool call context
+      logAssistantInteraction("TOOL_CALL_CONTEXT", {
+        threadId: thread.id,
+        runId: run.id,
+        status: run.status,
+        toolCallCount: toolCalls.length,
+        toolCalls: toolCalls.map(tc => ({
+          id: tc.id,
+          name: tc.function.name,
+          arguments: tc.function.arguments
+        }))
+      });
+
+      const toolExecutionStartTime = Date.now();
       const outputs = await Promise.all(
         toolCalls.map(async (tc) => {
           const args = JSON.parse(tc.function.arguments || "{}");
@@ -228,6 +309,7 @@ export async function runAssistantTurn({
           return { tool_call_id: tc.id, output: JSON.stringify(result) };
         })
       );
+      logTiming("Tool Execution", toolExecutionStartTime);
 
       await withRetry(() =>
         openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
@@ -239,6 +321,7 @@ export async function runAssistantTurn({
     }
 
     if (run.status === "completed") {
+      const responseStartTime = Date.now();
       const msgs = await withRetry(() =>
         openai.beta.threads.messages.list(thread.id, { limit: 1, order: "desc" })
       );
@@ -247,12 +330,39 @@ export async function runAssistantTurn({
         latest?.content?.[0]?.type === "text"
           ? latest.content[0].text.value
           : "";
+      
+      logTiming("Response Retrieval", responseStartTime);
+      logTiming("Total Turn", turnStartTime);
+      
+      // Log Assistant response
+      logAssistantInteraction("ASSISTANT_RESPONSE", {
+        threadId: thread.id,
+        runId: run.id,
+        status: run.status,
+        responseLength: text.length,
+        responsePreview: text.slice(0, 200) + "...",
+        usage: run.usage || "not available"
+      });
+      
       return { threadId: thread.id, text };
     }
 
     if (["failed", "cancelled", "expired"].includes(run.status as string)) {
       const errMsg = run.last_error?.message || "Unknown error";
       const errCode = run.last_error?.code || "no_code";
+      
+      logTiming("Total Turn (Failed)", turnStartTime);
+      
+      // Log Assistant error
+      logAssistantInteraction("ASSISTANT_ERROR", {
+        threadId: thread.id,
+        runId: run.id,
+        status: run.status,
+        errorCode: errCode,
+        errorMessage: errMsg,
+        lastError: run.last_error
+      });
+      
       // Instead of throwing, return a conversational error payload
       return {
         threadId: thread.id,
