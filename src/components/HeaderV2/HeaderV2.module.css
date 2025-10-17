@@ -1,0 +1,90 @@
+.wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  height: 52px;
+  width: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #121417;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand {
+  font-weight: 500;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.link {
+  text-decoration: none;
+  color: #e9ecef;
+  font-size: 14px;
+}
+
+.link:hover {
+  color: #5FCB3A;
+  text-decoration: underline;
+  text-underline-offset: 9px;
+}
+
+.buttonBlue,
+.buttonGray {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.buttonBlue {
+  background: var(--blue-600);
+  color: #fff;
+}
+
+.buttonGray {
+  background: var(--gray-700);
+  padding: 0 4px;
+  color: #e9ecef;
+}
+
+.uploadIcon {
+  padding: 0 8px 0 0;
+  margin-left: -4px;
+}
+
+.buttonGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.buttonBlue:hover {
+  background-color: #0094E2;
+}
+
+.buttonGray:hover {
+  background-color: #4D5A60;
+}
+
+.active {
+  color: #ffffff;
+}
