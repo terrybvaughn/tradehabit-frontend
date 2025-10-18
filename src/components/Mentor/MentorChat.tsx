@@ -4,8 +4,12 @@ import styles from "./MentorChat.module.css";
 import { MessageBubble } from "./MessageBubble";
 import { PromptInput } from "./PromptInput";
 import { sendMessage } from "@/lib/mentor/api";
+import { useAnalysisStatus } from "@/AnalysisStatusContext";
+import { useSummary } from "@/api/hooks";
+import { generateWelcomeMessage, formatWelcomeMessage } from "@/lib/mentor/welcomeMessage";
+
 interface Message {
-  role: "user" | "assistant" | "status";
+  role: "user" | "assistant" | "status" | "error";
   text: string;
   elapsed?: number;
 }
@@ -20,6 +24,9 @@ const STATUS_WORDS = [
 const getRandomStatusWord = () => STATUS_WORDS[Math.floor(Math.random() * STATUS_WORDS.length)];
 
 export const MentorChat: FC = () => {
+  const { ready } = useAnalysisStatus();
+  const { data: summaryData } = useSummary(ready);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -29,9 +36,18 @@ export const MentorChat: FC = () => {
     elapsed: number;
     isActive: boolean;
   } | null>(null);
+
+  // Welcome message and priming state
+  const [welcomeMessageShown, setWelcomeMessageShown] = useState(false);
+  const [streamingWelcome, setStreamingWelcome] = useState(false);
+  const [assistantPrimed, setAssistantPrimed] = useState(false);
+  const [primingInProgress, setPrimingInProgress] = useState(false);
+
   const listRef = useRef<HTMLDivElement | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const statusIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const primingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const streamingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -68,6 +84,117 @@ export const MentorChat: FC = () => {
       }
     };
   }, [statusMessage?.isActive]);
+
+  // Streaming effect for welcome message
+  const streamText = (text: string, onComplete: () => void) => {
+    setStreamingWelcome(true);
+    let currentText = '';
+    let index = 0;
+
+    const typeNextChar = () => {
+      if (index < text.length) {
+        currentText += text[index];
+        setMessages([{ role: "assistant", text: currentText }]);
+        index++;
+
+        // Natural pauses with randomization (20ms ±5ms)
+        let delay = 20 + (Math.random() * 10 - 5);
+        if (text[index - 1] === '.') delay += 100;
+        else if (text[index - 1] === ',') delay += 50;
+        else if (text[index - 1] === '\n') delay += 150;
+
+        streamingTimeoutRef.current = setTimeout(typeNextChar, delay);
+      } else {
+        setStreamingWelcome(false);
+        onComplete();
+      }
+    };
+
+    typeNextChar();
+  };
+
+  // Prime Assistant with "reset" message
+  const primeAssistant = async () => {
+    setPrimingInProgress(true);
+
+    // Start 60-second timer for status message
+    primingTimeoutRef.current = setTimeout(() => {
+      if (!assistantPrimed) {
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          text: "Hang tight, Franklin is still loading your data..."
+        }]);
+      }
+    }, 60000);
+
+    try {
+      const response = await sendMessage('reset', undefined);
+
+      // Check for successful reset
+      if (response.text.toLowerCase().includes('session has been reset')) {
+        setThreadId(response.threadId);
+        setAssistantPrimed(true);
+        setPrimingInProgress(false);
+
+        // Clear timeout if priming succeeded
+        if (primingTimeoutRef.current) {
+          clearTimeout(primingTimeoutRef.current);
+          primingTimeoutRef.current = null;
+        }
+      } else {
+        // Wrong response
+        throw new Error('Unexpected response from Assistant');
+      }
+    } catch (error) {
+      setPrimingInProgress(false);
+      setAssistantPrimed(false);
+
+      // Clear timeout
+      if (primingTimeoutRef.current) {
+        clearTimeout(primingTimeoutRef.current);
+        primingTimeoutRef.current = null;
+      }
+
+      // Show error message
+      setMessages(prev => [...prev, {
+        role: "error",
+        text: error instanceof Error && error.message === 'Unexpected response from Assistant'
+          ? "Mentor received an unexpected response. Please try uploading your data again."
+          : "Mentor is temporarily unavailable. Please try again later."
+      }]);
+    }
+  };
+
+  // Trigger welcome message and priming when ready
+  useEffect(() => {
+    if (ready && !welcomeMessageShown && summaryData !== undefined) {
+      setWelcomeMessageShown(true);
+
+      // Generate welcome message
+      const welcomeData = generateWelcomeMessage(summaryData);
+      const welcomeText = formatWelcomeMessage(welcomeData);
+
+      // Start parallel processes: streaming + priming
+      streamText(welcomeText, () => {
+        // Welcome streaming complete
+        console.log('Welcome message streaming complete');
+      });
+
+      primeAssistant();
+    }
+  }, [ready, summaryData, welcomeMessageShown]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (primingTimeoutRef.current) {
+        clearTimeout(primingTimeoutRef.current);
+      }
+      if (streamingTimeoutRef.current) {
+        clearTimeout(streamingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSendMessage = async (text: string) => {
     console.log("handleSendMessage called with:", text);
@@ -172,7 +299,11 @@ export const MentorChat: FC = () => {
         )}
         <div ref={endRef} />
       </div>
-      <PromptInput onSend={handleSendMessage} loading={loading} />
+      <PromptInput
+        onSend={handleSendMessage}
+        loading={loading}
+        disabled={!ready || streamingWelcome || primingInProgress || !assistantPrimed}
+      />
     </div>
   );
 };

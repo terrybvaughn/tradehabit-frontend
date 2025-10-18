@@ -6,9 +6,10 @@ import arrowUpIcon from "@/assets/images/icon-arrow-up.svg";
 interface PromptInputProps {
   onSend: (text: string) => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
-export const PromptInput: FC<PromptInputProps> = ({ onSend, loading = false }) => {
+export const PromptInput: FC<PromptInputProps> = ({ onSend, loading = false, disabled = false }) => {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -22,13 +23,13 @@ export const PromptInput: FC<PromptInputProps> = ({ onSend, loading = false }) =
   }, [input]);
 
   useEffect(() => {
-    if (!loading && textareaRef.current) {
+    if (!loading && !disabled && textareaRef.current) {
       textareaRef.current.focus();
     }
-  }, [loading]);
+  }, [loading, disabled]);
 
   const handleSend = () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || disabled) return;
     onSend(input);
     setInput("");
     // Reset height after clearing input
@@ -49,21 +50,21 @@ export const PromptInput: FC<PromptInputProps> = ({ onSend, loading = false }) =
       <textarea
         ref={textareaRef}
         className={styles.promptInput}
-        placeholder="Ask Franklin a question..."
+        placeholder={disabled ? "Analytics processing..." : "Ask Franklin a question..."}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        disabled={loading}
+        disabled={loading || disabled}
         rows={1}
       />
       <div className={styles.buttonRibbon}>
         <button
-          className={`${styles.submitButton} ${input.trim() && !loading ? styles.submitButtonActive : ""}`}
+          className={`${styles.submitButton} ${input.trim() && !loading && !disabled ? styles.submitButtonActive : ""}`}
           type="button"
-          disabled={!input.trim() || loading}
+          disabled={!input.trim() || loading || disabled}
           onClick={handleSend}
         >
-          <img src={arrowUpIcon} alt="Send" height={22} style={{ opacity: loading ? 0.3 : 1 }} />
+          <img src={arrowUpIcon} alt="Send" height={22} style={{ opacity: (loading || disabled) ? 0.3 : 1 }} />
         </button>
       </div>
     </div>

@@ -81,6 +81,32 @@
   margin: 0 0 0.8em 0;
 }
 
+.assistantMessage h1 {
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #5FCB3A 0%, #FFFFFF 20%, #FF53D7 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.8em 0;
+}
+
+.assistantMessage h2,
+.assistantMessage h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 1.2em 0 0.6em 0;
+}
+
+.assistantMessage strong {
+  font-weight: 600;
+  color: #FFFFFF;
+  display: block;
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
 .assistantMessage ul,
 .assistantMessage ol {
   padding-left: 1.2em;

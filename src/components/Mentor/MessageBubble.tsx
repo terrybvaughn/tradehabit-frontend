@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import styles from "./MentorChat.module.css";
 
 interface MessageBubbleProps {
-  role: "user" | "assistant" | "status";
+  role: "user" | "assistant" | "status" | "error";
   content: string;
 }
 
@@ -21,6 +21,16 @@ export const MessageBubble: FC<MessageBubbleProps> = ({ role, content }) => {
     return (
       <div className={`${styles.statusMessage} ${styles.statusMessageComplete}`}>
         {content}
+      </div>
+    );
+  }
+
+  if (role === "error") {
+    return (
+      <div className={styles.assistantMessage} style={{ color: "#FF53D7" }}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {content}
+        </ReactMarkdown>
       </div>
     );
   }
