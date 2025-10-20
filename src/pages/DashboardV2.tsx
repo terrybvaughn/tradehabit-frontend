@@ -14,6 +14,9 @@ const DashboardV2: FC = () => {
   // Upload modal is open when analysis not ready, or when manually toggled
   const [uploadOpen, setUploadOpen] = useState(!ready);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  // Navigation state for center column content
+  const [currentView, setCurrentView] = useState<'insights' | 'trades' | 'goals'>('insights');
 
   // Automatically show when ready becomes false (e.g., on initial load)
   useEffect(() => {
@@ -36,12 +39,13 @@ const DashboardV2: FC = () => {
       <HeaderV2
         openUploadModal={() => setUploadOpen(true)}
         openSettingsModal={() => setSettingsOpen(true)}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        showNav={!uploadOpen && ready}
       />
       <Divider />
       {ready && !uploadOpen && (
-        <TemplateV2>
-          <div>Phase 2: Page content goes here</div>
-        </TemplateV2>
+        <TemplateV2 currentView={currentView} />
       )}
 
       {/* Modals overlay the full screen */}

@@ -8,9 +8,12 @@ import { useAnalysisStatus } from "@/AnalysisStatusContext";
 interface HeaderV2Props {
   openUploadModal: () => void;
   openSettingsModal: () => void;
+  currentView: 'insights' | 'trades' | 'goals';
+  setCurrentView: (view: 'insights' | 'trades' | 'goals') => void;
+  showNav: boolean;
 }
 
-export const HeaderV2: FC<HeaderV2Props> = ({ openUploadModal, openSettingsModal }) => {
+export const HeaderV2: FC<HeaderV2Props> = ({ openUploadModal, openSettingsModal, currentView, setCurrentView, showNav }) => {
   const { ready } = useAnalysisStatus();
 
   return (
@@ -22,34 +25,34 @@ export const HeaderV2: FC<HeaderV2Props> = ({ openUploadModal, openSettingsModal
       </div>
 
       {/* ------------ right side ------------- */}
-      {ready && (
+      {showNav && ready && (
       <nav className={styles.nav} aria-label="Primary">
         <a
-          className={styles.link}
+          className={`${styles.link} ${currentView === 'insights' ? styles.active : ''}`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            // TODO: Handle Insights navigation
+            setCurrentView('insights');
           }}
         >
           Insights
         </a>
         <a
-          className={styles.link}
+          className={`${styles.link} ${currentView === 'trades' ? styles.active : ''}`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            // TODO: Handle Trades navigation
+            setCurrentView('trades');
           }}
         >
           Trades
         </a>
         <a
-          className={styles.link}
+          className={`${styles.link} ${currentView === 'goals' ? styles.active : ''}`}
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            // TODO: Handle Goals navigation
+            setCurrentView('goals');
           }}
         >
           Goals

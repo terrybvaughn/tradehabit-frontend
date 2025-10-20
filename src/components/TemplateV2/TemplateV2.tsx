@@ -1,17 +1,21 @@
-import type { FC, ReactNode } from "react";
+import type { FC } from "react";
 import styles from "./TemplateV2.module.css";
 import { DonutChart } from "@/components/Body/DonutChart";
 import { MentorChat } from "@/components/Mentor/MentorChat";
-import { useSummary } from "@/api/hooks";
+import { InsightsView } from "./InsightsView";
+import { Goals } from "@/components/Goals/Goals";
+import { TradesTableV2 } from "@/components/Body/TradesTableV2";
+import { useSummary, useTrades } from "@/api/hooks";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
 
 interface TemplateV2Props {
-  children: ReactNode;
+  currentView: 'insights' | 'trades' | 'goals';
 }
 
-export const TemplateV2: FC<TemplateV2Props> = ({ children }) => {
+export const TemplateV2: FC<TemplateV2Props> = ({ currentView }) => {
   const { ready } = useAnalysisStatus();
   const { data: summaryData } = useSummary(ready);
+  const { data: tradesData } = useTrades(ready);
 
   // Derived metrics
   const totalTrades = summaryData?.total_trades ?? 0;
@@ -33,6 +37,19 @@ export const TemplateV2: FC<TemplateV2Props> = ({ children }) => {
 
   const streakCurrent = summaryData?.streak_current ?? 0;
   const streakRecord = summaryData?.streak_record ?? 0;
+
+  const renderCenterContent = () => {
+    switch (currentView) {
+      case 'insights':
+        return <InsightsView />;
+      case 'trades':
+        return <TradesTableV2 trades={tradesData?.trades ?? []} />;
+      case 'goals':
+        return <Goals />;
+      default:
+        return <InsightsView />;
+    }
+  };
 
   return (
     <div className={styles.template}>
@@ -73,7 +90,7 @@ export const TemplateV2: FC<TemplateV2Props> = ({ children }) => {
         </div>
       </aside>
       <main className={styles.center}>
-        {children}
+        {renderCenterContent()}
       </main>
       <aside className={styles.right}>
         <MentorChat />
