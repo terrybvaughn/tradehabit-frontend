@@ -46,6 +46,7 @@ export interface SummaryResponse {
   average_loss: number;
   average_win: number;
   diagnostic_text: string;
+  expectancy: number;
   loss_count: number;
   mistake_counts: MistakeCounts;
   payoff_ratio: number;
@@ -73,12 +74,28 @@ export interface LossEntry {
   lossIndex: number;
   pointsLost: number;
   tradeId: string;
+  side?: string;
+  exitQty?: number;
+  symbol?: string;
+  entryTime?: string;
+  exitOrderId?: number;
 }
 
 export interface LossesResponse {
   meanPointsLost: number;
   stdDevPointsLost: number;
   losses: LossEntry[];
+}
+
+// ────────────────────────────────────────────────────────────
+// Excessive Risk endpoint
+export interface ExcessiveRiskResponse {
+  totalTradesWithStops: number;
+  excessiveRiskCount: number;
+  meanRiskPoints: number;
+  stdDevRiskPoints: number;
+  excessiveRiskThreshold: number;
+  excessiveRiskPercent?: number;
 }
 
 // ────────────────────────────────────────────────────────────

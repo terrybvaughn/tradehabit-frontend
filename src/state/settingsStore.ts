@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { DEFAULT_SETTINGS } from "./defaultSettings";
 
 interface SettingsState {
   revengeK: number;  // 0.5 – 3.0
@@ -15,12 +16,24 @@ const STORAGE_KEY = "tradehabit_settings";
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      revengeK: 1.0,
-      lossSigma: 1.0,
-      riskSigma: 1.5,
-      riskVR: 0.35,
+      ...DEFAULT_SETTINGS,
       setMany: (partial) => set(partial),
-      reset: () => set({ revengeK: 1.0, lossSigma: 1.0, riskSigma: 1.5, riskVR: 0.35 }),
+      reset: () => {
+        set({ ...DEFAULT_SETTINGS });
+        // Also clear from sessionStorage
+        sessionStorage.removeItem(STORAGE_KEY);
+        // Notify backend to revert thresholds
+        fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            k: DEFAULT_SETTINGS.revengeK,
+            sigma_loss: DEFAULT_SETTINGS.lossSigma,
+            sigma_risk: DEFAULT_SETTINGS.riskSigma,
+            vr: DEFAULT_SETTINGS.riskVR,
+          }),
+        }).catch(() => {});
+      },
     }),
     {
       name: STORAGE_KEY,

@@ -31,13 +31,6 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
     }
   }, [ready]);
 
-  // Reset thresholds whenever the upload modal is shown (fresh dataset expected)
-  useEffect(() => {
-    if (uploadOpen) {
-      useSettingsStore.getState().reset();
-    }
-  }, [uploadOpen]);
-
   const closeUploadModal = () => setUploadOpen(false);
 
   return (
