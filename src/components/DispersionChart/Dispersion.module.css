@@ -1,0 +1,17 @@
+.chartContainer {
+  width: 100%;
+  background: rgba(41, 51, 56, 0.38);
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  margin-top: 24px;
+  overflow-x: auto;
+  box-sizing: border-box;
+  padding: 2px 20px 10px 10px;
+}
+
+.tooltipLine {
+  color: #121417;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+}

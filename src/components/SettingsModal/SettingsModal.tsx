@@ -38,6 +38,14 @@ export const SettingsModal: FC<SettingsModalProps> = ({ open, onClose }) => {
     setSaving(true);
     setError("");
     try {
+      // Capture old values before updating
+      const oldValues = {
+        revengeK: store.revengeK,
+        lossSigma: store.lossSigma,
+        riskSigma: store.riskSigma,
+        riskVR: store.riskVR,
+      };
+
       // Send new thresholds to backend – it will recalculate in-memory analyses.
       await apiClient.post(`/api/settings`, {
         k: revengeK,
@@ -49,8 +57,32 @@ export const SettingsModal: FC<SettingsModalProps> = ({ open, onClose }) => {
       // Persist locally after successful save
       store.setMany({ revengeK, lossSigma, riskSigma, riskVR });
 
-      // Invalidate caches so UI picks up new data
-      qc.invalidateQueries(); // invalidate all; simplest
+      // Determine which settings changed to minimize refetches
+      const changed = {
+        revenge: revengeK !== oldValues.revengeK,
+        loss: lossSigma !== oldValues.lossSigma,
+        risk: riskSigma !== oldValues.riskSigma || riskVR !== oldValues.riskVR,
+      };
+
+      // Always refetch summary and insights (they aggregate all mistakes)
+      const refetchPromises = [
+        qc.refetchQueries({ queryKey: ["summary"], type: 'active' }),
+        qc.refetchQueries({ queryKey: ["insights"], type: 'active' }),
+      ];
+
+      // Only refetch specific endpoints based on what changed
+      if (changed.revenge) {
+        refetchPromises.push(qc.refetchQueries({ queryKey: ["trades"], type: 'active' }));
+      }
+      if (changed.loss) {
+        refetchPromises.push(qc.refetchQueries({ queryKey: ["losses"], type: 'active' }));
+      }
+      if (changed.risk) {
+        refetchPromises.push(qc.refetchQueries({ queryKey: ["excessive-risk"], type: 'active' }));
+      }
+
+      await Promise.all(refetchPromises);
+
       onClose();
     } catch (err) {
       setError("Could not save settings. Please try again.");
@@ -80,10 +112,10 @@ export const SettingsModal: FC<SettingsModalProps> = ({ open, onClose }) => {
       <div className={`${base.modal} ${styles.modal}`} role="dialog" aria-modal="true">
         <h2 className={base.title}>Settings</h2>
 
-        <Slider label="Revenge-Trading Window Multiplier: " min={0.5} max={3.0} step={0.25} value={revengeK} setValue={setRevengeK} />
-        <Slider label="Outsized-Loss Threshold: " min={0.75} max={1.5} step={0.25} value={lossSigma} setValue={setLossSigma} />
-        <Slider label="Excessive-Risk Threshold: " min={1.0} max={2.0} step={0.25} value={riskSigma} setValue={setRiskSigma} />
-        <Slider label="Risk-Sizing Consistency: " min={0.2} max={0.5} step={0.05} value={riskVR} setValue={setRiskVR} />
+        <Slider label="Revenge Window Multiplier: " min={0.5} max={3.0} step={0.25} value={revengeK} setValue={setRevengeK} />
+        <Slider label="Outsized Loss Threshold: " min={0.75} max={1.5} step={0.25} value={lossSigma} setValue={setLossSigma} />
+        <Slider label="Excessive Risk Threshold: " min={1.0} max={2.0} step={0.25} value={riskSigma} setValue={setRiskSigma} />
+        <Slider label="Risk Sizing Threshold: " min={0.2} max={0.5} step={0.05} value={riskVR} setValue={setRiskVR} />
 
         {error && <div className={styles.errorMsg}>{error}</div>}
 

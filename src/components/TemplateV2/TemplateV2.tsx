@@ -26,6 +26,7 @@ export const TemplateV2: FC<TemplateV2Props> = ({ currentView }) => {
   const avgProfit = summaryData?.average_win?.toFixed(2) ?? "0";
   const avgLoss = summaryData?.average_loss?.toFixed(2) ?? "0";
   const payoffRatio = summaryData?.payoff_ratio?.toFixed(2) ?? "0";
+  const expectancy = summaryData?.expectancy?.toFixed(2) ?? "0";
   const flaggedTrades = summaryData?.flagged_trades ?? (totalTrades - Math.round(totalTrades * (summaryData?.clean_trade_rate ?? 0)));
   const cleanTrades = totalTrades - flaggedTrades;
 
@@ -70,6 +71,7 @@ export const TemplateV2: FC<TemplateV2Props> = ({ currentView }) => {
             <li>Average Profit <span>{avgProfit}</span></li>
             <li>Average Loss <span>{avgLoss}</span></li>
             <li>Payoff Ratio <span>{payoffRatio}</span></li>
+            <li>Expectancy <span>{expectancy}</span></li>
           </ul>
         </div>
         <div className={styles.section}>

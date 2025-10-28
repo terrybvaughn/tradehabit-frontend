@@ -7,6 +7,7 @@ import { sendMessage } from "@/lib/mentor/api";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
 import { useSummary } from "@/api/hooks";
 import { generateWelcomeMessage, formatWelcomeMessage } from "@/lib/mentor/welcomeMessage";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Message {
   role: "user" | "assistant" | "status" | "error";
@@ -25,7 +26,8 @@ const getRandomStatusWord = () => STATUS_WORDS[Math.floor(Math.random() * STATUS
 
 export const MentorChat: FC = () => {
   const { ready } = useAnalysisStatus();
-  const { data: summaryData } = useSummary(ready);
+  const qc = useQueryClient();
+  const { data: summaryData, isFetching: summaryFetching } = useSummary(ready);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [threadId, setThreadId] = useState<string | undefined>(undefined);
@@ -165,9 +167,14 @@ export const MentorChat: FC = () => {
     }
   };
 
-  // Trigger welcome message and priming when ready
+  // Invalidate summary when ready flips to true (new dataset)
   useEffect(() => {
-    if (ready && !welcomeMessageShown && summaryData !== undefined) {
+    if (ready) qc.invalidateQueries({ queryKey: ["summary"] });
+  }, [ready]);
+
+  // Trigger welcome message and priming once fresh summary is loaded
+  useEffect(() => {
+    if (ready && !summaryFetching && !welcomeMessageShown && summaryData) {
       setWelcomeMessageShown(true);
 
       // Generate welcome message
@@ -182,7 +189,7 @@ export const MentorChat: FC = () => {
 
       primeAssistant();
     }
-  }, [ready, summaryData, welcomeMessageShown]);
+  }, [ready, summaryFetching, summaryData, welcomeMessageShown]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {

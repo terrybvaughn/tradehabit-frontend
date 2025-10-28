@@ -1,0 +1,33 @@
+.chartContainer {
+  width: 100%;
+  margin: 22px 0 0 0;
+  background: rgba(41, 51, 56, 0.38);
+  border: 1px solid #3D4A52;
+  border-radius: 14px;
+  padding: 2px 20px 10px 10px;
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.chartSvg {
+  display: block;
+}
+
+.lossRegion {
+  /* fill: #FF53D7; */
+}
+
+.profitRegion {
+  /* fill: #5FCB3A; */
+}
+
+.breakevenLine {
+  stroke: #FFFFFF;
+  stroke-width: 2px;
+  stroke-dasharray: 4 4;
+}
+
+.userPoint {
+  fill: #5FCB3A;
+}
+
