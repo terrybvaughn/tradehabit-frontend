@@ -13,23 +13,22 @@ Use `./scripts/update-shared-docs.sh` (from the root of this repo) to automatica
 ## 🚀 Standard Workflow (Use This!)
 
 ```bash
-# 1. Make your changes in frontend repo
+# 1) Make your doc changes inside the submodule
 cd /Users/terry/projects/tradehabit-frontend
-# Edit docs/shared/docs/mentor.md (or other files)
-
-# 2. Commit to source repo (from within the submodule)
 cd docs/shared
-git add docs/mentor.md
-git commit -m "Your descriptive message"
+git checkout main
+# edit files under docs/
+git add docs/<file>.md
+git commit -m "docs: <message>"
 git push
 
-# 3. Update all repos with sync script (run this)
+# 2) From frontend root, sync submodule pointers
 cd /Users/terry/projects/tradehabit-frontend
 ./scripts/update-shared-docs.sh
-# The script will:
-# - Update the source docs repo (tradehabit-docs)
-# - Update submodule pointers in backend and frontend repos
-# - Commit and push the pointer updates
+# This:
+# - Fast-forwards the submodule in backend and frontend
+# - Commits the updated submodule pointers in each parent repo
+# - Prints a success message when complete
 ```
 
 ## ⚠️ Common Issues to Avoid
@@ -44,7 +43,7 @@ cd /Users/terry/projects/tradehabit-frontend
 - **Symptom**: Updated files not visible in backend/frontend repos
 - **Solution**: Update submodule pointers after pushing to source repo
 
-### 3. Uncommitted Changes
+### 3. Uncommitted Changes (Clean Working Trees Required)
 - **Problem**: Sync script fails due to uncommitted changes in submodule
 - **Symptom**: "Uncommitted changes in docs/shared" error
 - **Solution**: Commit or stash changes before running sync
@@ -90,7 +89,7 @@ If the automated sync script fails, follow these steps:
    git push
    ```
 
-## ✅ Verification Commands
+## ✅ Verification & Auth
 
 ```bash
 # Check if your changes are there
@@ -98,6 +97,13 @@ grep -n "Your New Content" docs/shared/docs/mentor.md
 
 # Check submodule status
 git -C docs/shared status
+
+# If pushes prompt for credentials, ensure your Git auth is set up
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+# For HTTPS, use a credential helper or a personal access token
+git config --global credential.helper osxkeychain  # macOS
+git config --global credential.helper store        # fallback
 
 # Check recent commits
 git -C docs/shared log --oneline -3
@@ -107,9 +113,17 @@ git -C docs/shared log --oneline -3
 
 - `docs/shared/` = git submodule pointing to `tradehabit-docs`
 - Always commit to source repo first, then sync
-- Use the sync script: `./scripts/update-shared-docs.sh`
+- Use the sync script: `./scripts/update-shared-docs.sh` (requires clean working trees in parent repos)
 - If script fails, fix detached HEAD in backend first
 - Always verify changes appear in all repos after sync
+
+## 🧭 Why Two Steps Are Needed
+
+`docs/shared` is a Git submodule, which is a separate repository. You must:
+1) Commit and push your changes in the submodule itself (so a new commit exists to point to), then
+2) Update the parent repositories to point at that new commit (the script does this fast-forward + commit for you).
+
+The script will abort if any parent repo has uncommitted changes under `docs/shared` or elsewhere. Commit or stash first, then re-run.
 
 ---
 
