@@ -26,13 +26,10 @@ export const useAnalyzeCsv = (
       formData.append("file", file);
       return apiClient.post<AnalyzeResponse>("/api/analyze", formData);
     },
-    onSuccess: (data, variables, context) => {
-      // Clear session goals and seed defaults for new dataset
+    onSuccess: async (data, variables, context) => {
+      // Clear session goals and storage first
       useGoalsStore.getState().setGoals([]);
-      seedDefaultGoals();
-
-      // Reset saved thresholds to defaults on new dataset
-      useSettingsStore.getState().reset();
+      try { sessionStorage.removeItem("tradehabit_goals"); } catch {}
 
       // Remove all cached query data to force fresh fetches
       qc.removeQueries({ queryKey: ["summary"] });
@@ -41,6 +38,15 @@ export const useAnalyzeCsv = (
       qc.removeQueries({ queryKey: ["insights"] });
       qc.removeQueries({ queryKey: ["excessive-risk"] });
       qc.removeQueries({ queryKey: ["goals"] });
+
+      // Reset saved thresholds to defaults on new dataset
+      // This triggers backend re-analysis, so we await it to complete first
+      await useSettingsStore.getState().reset();
+
+      // Now that settings have been reset and backend analysis should be complete,
+      // seed the default goals. The seedDefaultGoals function has retry logic
+      // with sanity checks to handle any remaining race conditions.
+      await seedDefaultGoals();
 
       // Let the caller run (sets ready flag, which will trigger new fetches)
       options?.onSuccess?.(data, variables, context as any);
