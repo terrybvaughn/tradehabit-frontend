@@ -178,20 +178,23 @@ export const MentorChat: FC = () => {
 
   // Trigger welcome message and priming once fresh summary is loaded
   useEffect(() => {
-    if (isMentorEnabled && ready && !summaryFetching && !welcomeMessageShown && summaryData) {
+    if (ready && !summaryFetching && !welcomeMessageShown && summaryData) {
       setWelcomeMessageShown(true);
 
       // Generate welcome message
       const welcomeData = generateWelcomeMessage(summaryData);
       const welcomeText = formatWelcomeMessage(welcomeData);
 
-      // Start parallel processes: streaming + priming
+      // Always show welcome message
       streamText(welcomeText, () => {
         // Welcome streaming complete
         console.log('Welcome message streaming complete');
       });
 
-      primeAssistant();
+      // Only prime assistant if Mentor is enabled (prevents API calls when disabled)
+      if (isMentorEnabled) {
+        primeAssistant();
+      }
     }
   }, [isMentorEnabled, ready, summaryFetching, summaryData, welcomeMessageShown]);
 
