@@ -25,6 +25,10 @@ const STATUS_WORDS = [
 const getRandomStatusWord = () => STATUS_WORDS[Math.floor(Math.random() * STATUS_WORDS.length)];
 
 export const MentorChat: FC = () => {
+  // Read query parameter to check if Mentor is enabled
+  const urlParams = new URLSearchParams(window.location.search);
+  const isMentorEnabled = urlParams.get('mentor') === '1';
+
   const { ready } = useAnalysisStatus();
   const qc = useQueryClient();
   const { data: summaryData, isFetching: summaryFetching } = useSummary(ready);
@@ -174,7 +178,7 @@ export const MentorChat: FC = () => {
 
   // Trigger welcome message and priming once fresh summary is loaded
   useEffect(() => {
-    if (ready && !summaryFetching && !welcomeMessageShown && summaryData) {
+    if (isMentorEnabled && ready && !summaryFetching && !welcomeMessageShown && summaryData) {
       setWelcomeMessageShown(true);
 
       // Generate welcome message
@@ -189,7 +193,7 @@ export const MentorChat: FC = () => {
 
       primeAssistant();
     }
-  }, [ready, summaryFetching, summaryData, welcomeMessageShown]);
+  }, [isMentorEnabled, ready, summaryFetching, summaryData, welcomeMessageShown]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -309,7 +313,7 @@ export const MentorChat: FC = () => {
       <PromptInput
         onSend={handleSendMessage}
         loading={loading}
-        disabled={!ready || streamingWelcome || primingInProgress || !assistantPrimed}
+        disabled={!isMentorEnabled || !ready || streamingWelcome || primingInProgress || !assistantPrimed}
       />
     </div>
   );
