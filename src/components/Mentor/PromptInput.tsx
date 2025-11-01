@@ -2,6 +2,7 @@ import type { FC } from "react";
 import { useState, useRef, useEffect } from "react";
 import styles from "./MentorChat.module.css";
 import arrowUpIcon from "@/assets/images/icon-arrow-up.svg";
+import { trackEvent } from "@/utils/analytics";
 
 interface PromptInputProps {
   onSend: (text: string) => void;
@@ -30,6 +31,10 @@ export const PromptInput: FC<PromptInputProps> = ({ onSend, loading = false, dis
 
   const handleSend = () => {
     if (!input.trim() || loading || disabled) return;
+    
+    // Track mentor prompt event
+    trackEvent('mentor_prompt');
+    
     onSend(input);
     setInput("");
     // Reset height after clearing input
