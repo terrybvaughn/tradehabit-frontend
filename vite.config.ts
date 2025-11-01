@@ -7,11 +7,11 @@ export default defineConfig({
   // Dev-server settings for Replit
   server: {
     host: true, // listen on 0.0.0.0 so the repl can be reached externally
-    port: 5000, // Replit webview requires port 5000
+    port: Number(process.env.PORT) || 5173, // Use PORT env var or default to 5173 (Flask runs on 5000)
     allowedHosts: true, // disable host check (or list specific hosts)
     proxy: {
       "/api": {
-        target: "http://localhost:5000", // Change to your Flask backend URL
+        target: "http://localhost:5000", // Flask backend runs on port 5000
         changeOrigin: true,
       },
     },
