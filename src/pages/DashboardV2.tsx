@@ -6,7 +6,6 @@ import { Divider } from "@/components/Divider/Divider";
 import { UploadModal } from "@/components/UploadModal/UploadModal";
 import { SettingsModal } from "@/components/SettingsModal/SettingsModal";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
-import { useSettingsStore } from "@/state/settingsStore";
 
 const DashboardV2: FC = () => {
   const { ready } = useAnalysisStatus();

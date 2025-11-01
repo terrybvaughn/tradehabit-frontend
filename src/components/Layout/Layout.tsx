@@ -9,7 +9,6 @@ import { Body } from "@/components/Body/Body";
 import { UploadModal } from "@/components/UploadModal/UploadModal";
 import { SettingsModal } from "@/components/SettingsModal/SettingsModal";
 import { useAnalysisStatus } from "@/AnalysisStatusContext";
-import { useSettingsStore } from "@/state/settingsStore";
 
 interface LayoutProps {
   children: ReactNode;

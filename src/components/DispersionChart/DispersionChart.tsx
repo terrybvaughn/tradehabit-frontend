@@ -46,7 +46,6 @@ export const DispersionChart: FC<DispersionChartProps> = ({
   mean: meanProp,
   std: stdProp,
   threshold,
-  sigmaUsed,
   maxPoints = 235,
   yAxisLabel = "Value",
   xAxisLabel = "Data Points",
