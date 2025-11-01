@@ -1,10 +1,12 @@
 import type { ChatResponse } from "./types";
 
+const BASE_URL: string = (import.meta.env.VITE_API_URL as string) ?? "";
+
 export async function sendMessage(
   message: string,
   threadId?: string
 ): Promise<ChatResponse> {
-  const res = await fetch("/api/mentor/chat", {
+  const res = await fetch(`${BASE_URL}/api/mentor/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, threadId }),
