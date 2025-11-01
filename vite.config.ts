@@ -7,7 +7,7 @@ export default defineConfig({
   // Dev-server settings for Replit
   server: {
     host: true, // listen on 0.0.0.0 so the repl can be reached externally
-    port: Number(process.env.PORT) || 5173, // use Replit-assigned port if available
+    port: 5000, // Replit webview requires port 5000
     allowedHosts: true, // disable host check (or list specific hosts)
     proxy: {
       "/api": {
