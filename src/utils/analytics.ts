@@ -2,7 +2,7 @@
  * Google Analytics 4 / Google Tag Manager Data Layer utility
  * 
  * Pushes events to window.dataLayer for GTM to process.
- * Phase 1: Minimal implementation for tester dimension and mentor_prompt event.
+ * Phase 1: Minimal implementation for mentor_prompt event.
  */
 
 declare global {
@@ -21,15 +21,6 @@ const ensureDataLayer = () => {
 };
 
 /**
- * Get the tester parameter from URL query string
- */
-export const getTesterParam = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  const params = new URLSearchParams(window.location.search);
-  return params.get('tester');
-};
-
-/**
  * Push a custom event to the Data Layer
  * 
  * @param eventName - Event name (e.g., 'mentor_prompt')
@@ -41,11 +32,8 @@ export const trackEvent = (eventName: string, params?: Record<string, any>) => {
   try {
     ensureDataLayer();
     
-    // Always include tester parameter if present in URL
-    const tester = getTesterParam();
     const eventData: Record<string, any> = {
       event: eventName,
-      ...(tester && { tester }),
       ...params
     };
     
